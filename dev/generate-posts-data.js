@@ -42,7 +42,7 @@ function writePostDataToJson(postData, filepath) {
 }
 
 export async function generatePostsData() {
-    const srcDirectory = "../../src";
+    const srcDirectory = getSrcDirectoryPath(process.cwd());
 
     const blogPosts = await getPostInfoFromDir(blogDir);
     writePostDataToJson(blogPosts, `${srcDirectory}/posts/blog-posts-data.json`);
