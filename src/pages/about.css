@@ -1,0 +1,16 @@
+.about_container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .about-heading {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .about-description {
+    font-size: 16px;
+    line-height: 1.6;
+  }

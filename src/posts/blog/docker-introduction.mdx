@@ -1,0 +1,42 @@
+# What is Docker?
+- Docker is an open source containerization platform. It enables developers to package applications into containers—standardized    executable components combining application source code with the operating system (OS) libraries and dependencies required to run that code in any environment. Containers simplify delivery of distributed applications, and have become increasingly popular as organizations shift to cloud-native development and hybrid multicloud environments.
+- Developers can create containers without Docker, but the platform makes it easier, simpler, and safer to build, deploy and manage containers. Docker is essentially a toolkit that enables developers to build, deploy, run, update, and stop containers using simple commands and work-saving automation through a single API.  
+# What are the benefits of Docker?
+* **Portability**:
+  * Once you have tested your containerized application you can deploy it to any other system where Docker is running and you can be sure that your application will perform exactly as it did when you tested it.
+* **Performance**:
+    * Although virtual machines are an alternative to containers, the fact that containers do not contain an operating system (whereas virtual machines do) means that containers have much smaller footprints than virtual machines, are faster to create, and quicker to start.
+* **Agility**:
+    * The portability and performance benefits offered by containers can help you make your development process more agile and responsive. Enhancing your continuous integration and continuous delivery processes to take advantage of containers and technology such as Enterprise Developer Build Tools for Windows makes it easier for you to deliver the right software at the right time. Enterprise Developer Build Tools for Windows is a component of Enterprise Developer which provides all of the functionality of Enterprise Developer to enable you to compile, build, and test COBOL code but without the overhead of an IDE.
+* **Isolation**:
+    * A Docker container that contains one of your applications also includes the relevant versions of any supporting software that your application requires. If other Docker containers contain applications that require different versions of the same supporting software, that isn't a problem because the different Docker containers are totally independent of one other. This also means that as you move through the various stages of your development lifecycle, you can have total confidence that an image you create during development will perform exactly the same as it moves through testing and potentially to your users.
+* **Scalability**:
+    * You can quickly create new containers if demand for your applications requires them. When using multiple containers you can take advantage of a range of container management options. See the Docker documentation for more information on these options.
+
+# Why is it popular right now ?
+- Docker is popular because of the possibilities it opens for software delivery and deployment. Many common problems and inefficiencies are resolved with containers. The six main reasons for Docker’s popularity are:
+1. ***Ease of use***:
+    * You can quickly create new containers if demand for your applications requires them. When using multiple containers you can take advantage of a range of container management options. See the Docker documentation for more information on these options.
+2. ***Faster scaling on systems***:
+    * Containers allow much more work to be done by far less computing hardware. In the early days of the Internet, the only way to scale a website was to buy or lease more servers. The cost of popularity was bound, linearly, to the cost of scaling up. Popular sites became victims of their own success, shelling out tens of thousands of dollars for new hardware. Containers allow data center operators to cram far more workloads into less hardware. Shared hardware means lower costs. Operators can bank those profits or pass the savings along to their customers.
+3. ***Better software delivery***:
+    * Software delivery using containers can also be more efficient. Containers are portable. They are also entirely self-contained. Containers include an isolated disk volume. That volume goes with the container as it is developed and deployed to various environments. The software dependencies (libraries, runtimes, etc.) ship with the container. If a container works on your machine, it will run the same way in a Development, Staging, and Production environment. Containers can eliminate the configuration variance problems common when deploying binaries or raw code.
+4. ***Flexibility***:
+    * Operating containerized applications is more flexible and resilient than that of non-containerized applications. Container orchestrators handle the running and monitoring of hundreds or thousands of containers. Container orchestrators are very powerful tools for managing large deployments and complex systems. Perhaps the only thing more popular than Docker right now is Kubernetes, currently the most popular container orchestrator.
+5. ***Software-defined networking***:
+    * Docker supports software-defined networking. The Docker CLI and Engine allow operators to define isolated networks for containers, without having to touch a single router. Developers and operators can design systems with complex network topologies and define the networks in configuration files. This is a security benefit, as well. An application’s containers can run in an isolated virtual network, with tightly-controlled ingress and egress paths.
+6. ***The rise of microservices architecture***:
+    * The rise of microservices has also contributed to the popularity of Docker. Microservices are simple functions, usually accessed via HTTP/HTTPS, that do one thing — and do it well. Software systems typically start as “monoliths,” in which a single binary supports many different system functions. As they grow, monoliths can become difficult to maintain and deploy. Microservices break a system down into simpler functions that can be deployed independently. Containers are terrific hosts for microservices. They are self-contained, easily deployed, and efficient.
+
+# How do docker containers work?
+* Containers are an abstraction in the application layer, whereby code and dependencies are compiled or packaged together. In this doc, we'll cover, container images, compiling a container, and automating a container registry.
+
+# What are a Dockerfile and docker-compose?
+***Dockerfile***:
+    * A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build users can create an automated build that executes several command-line instructions in succession.
+***docker-compose***:
+    * Docker Compose is a tool that was developed to help define and share multi-container applications. With Compose, we can create a YAML file to define the services and with a single command, can spin everything up or tear it all down. The big advantage of using Compose is you can define your application stack in a file, keep it at the root of your project repo (it’s now version controlled), and easily enable someone else to contribute to your project. Someone would only need to clone your repo and start the compose app. In fact, you might see quite a few projects on GitHub/GitLab doing exactly this now.
+
+# What is docker swarm?
+* Docker Swarm is an orchestration management tool that runs on Docker applications. It helps end-users in creating and deploying a cluster of Docker nodes.
+* Each node of a Docker Swarm is a Docker daemon, and all Docker daemons interact using the Docker API. Each container within the Swarm can be deployed and accessed by nodes of the same cluster.
