@@ -45,8 +45,8 @@ export async function generatePostsData() {
     const srcDirectory = getSrcDirectoryPath(process.cwd());
 
     const blogPosts = await getPostInfoFromDir(blogDir);
-    writePostDataToJson(blogPosts, `${srcDirectory}/posts/blog-posts-data.json`);
+    writePostDataToJson(blogPosts, `${srcDirectory}//posts//blog-posts-data.json`);
 
     const guidePosts = await getPostInfoFromDir(guidesDir);
-    writePostDataToJson(guidePosts, `${srcDirectory}/posts/guides-post-data.json`);
+    writePostDataToJson(guidePosts, `${srcDirectory}//posts//guides-post-data.json`);
 }
