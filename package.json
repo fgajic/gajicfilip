@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others  \"next dev\" \"node dev",
+    "dev": "concurrently --kill-others  \"next dev\" \"node dev/posts-watcher.js\"",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
