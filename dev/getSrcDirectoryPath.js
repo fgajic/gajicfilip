@@ -1,15 +1,15 @@
 import path from "path";
 import fs from "fs";
 
-export const blogDir = `${postsDir()}blog/`;
-export const guidesDir = `${postsDir()}guides/`;
+export const blogDir = path.join(postsDir(), "blog");
+export const guidesDir = path.join(postsDir(), "guides");
 
 export function postsDir() {
-    return `${getSrcDirectoryPath(process.cwd())}/posts/`;
+    return path.join(getSrcDirectoryPath(process.cwd()), "posts");
 }
 
 export function pagesDir() {
-    return `${getSrcDirectoryPath(process.cwd())}/pages/`;
+    return path.join(getSrcDirectoryPath(process.cwd()), "pages");
 }
 
 export function getSrcDirectoryPath(currentPath) {

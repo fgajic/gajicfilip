@@ -1,6 +1,7 @@
 import fs from "fs";
-import {blogDir, guidesDir} from "./getSrcDirectoryPath.js";
-import {generatePostsData} from "./generate-posts-data.js";
+import { blogDir, guidesDir } from "./getSrcDirectoryPath.js";
+import { generatePostsData } from "./generate-posts-data.js";
+import path from "path";
 
 const directoriesToWatch = [blogDir, guidesDir];
 
