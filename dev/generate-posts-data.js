@@ -42,11 +42,11 @@ function writePostDataToJson(postData, filepath) {
 }
 
 export async function generatePostsData() {
-    const srcDirectory = "..\..\src";
+    const srcDirectory = "../../src";
 
     const blogPosts = await getPostInfoFromDir(blogDir);
-    writePostDataToJson(blogPosts, `${srcDirectory}\\posts\\blog-posts-data.json`);
+    writePostDataToJson(blogPosts, `${srcDirectory}/posts/blog-posts-data.json`);
 
     const guidePosts = await getPostInfoFromDir(guidesDir);
-    writePostDataToJson(guidePosts, `${srcDirectory}\\posts\\guides-post-data.json`);
+    writePostDataToJson(guidePosts, `${srcDirectory}/posts/guides-post-data.json`);
 }
