@@ -1,4 +1,4 @@
 [
-    {"fontMatter":{"title":"Basic BASH commands","teaser":"Let's explore BASH commands","date":"20.02.2024."},"id":"basic-bash-commands"},
-    {"fontMatter":{"title":"Docker introduction","teaser":"Docker, it's components and how it works","date":"20.02.2024."},"id":"docker-introduction"}
+    {"fontMatter":{"title":"Docker introduction","teaser":"What is Docker, how it works and ","date":"21.02.2024."},"id":"docker-introduction"},
+    {"fontMatter":{"title":"Basic BASH commands","teaser":"Let's explore BASH commands","date":"20.02.2024."},"id":"basic-bash-commands"}
 ]
