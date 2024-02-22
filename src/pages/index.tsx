@@ -13,7 +13,7 @@ export default function Home({blogPosts, guidePosts}: InferGetStaticPropsType<ty
             </Head>
             <main>
                 <p className={"display-medium on-surface-text mt-8"}>
-                    {`Hi👋, I\'m`}
+                    {`Hi, I\'m`}
                     <span className="primary-text"> Filip</span>
                 </p>
 
