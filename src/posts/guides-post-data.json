@@ -1,1 +1,3 @@
-[{"fontMatter":{"title":"Just a little guide post","teaser":"This is the teaser!","date":"2023/10/11"},"id":"example-guide"}]
+[
+    {"fontMatter":{"title":"Setting Up Nginx Web Server on Linux","teaser": "Discover the comprehensive guide to setting up and configuring Nginx on Linux. From installation to firewall configuration, unlock the power of Nginx for your web hosting needs","date":"22.02.2024."},"id":"setup-nginx"}
+]

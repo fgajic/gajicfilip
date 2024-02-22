@@ -285,8 +285,8 @@
   /* display - small */
   --md-sys-typescale-display-small-font-family-name: "Courier New";
   --md-sys-typescale-display-small-font-family-style: Regular;
-  --md-sys-typescale-display-small-font-weight: 400px;
-  --md-sys-typescale-display-small-font-size: 36px;
+  --md-sys-typescale-display-small-font-weight: 40px;
+  --md-sys-typescale-display-small-font-size: 20px;
   --md-sys-typescale-display-small-line-height: 44px;
   --md-sys-typescale-display-small-letter-spacing: 0px;
   /* headline - large */
