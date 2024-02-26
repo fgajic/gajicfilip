@@ -6,6 +6,7 @@ import {ThemeProvider} from "next-themes";
 import Navbar from "@/components/navbar/Navbar";
 import { maxWidthClass } from "@/utils/styling";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import Footer from "@/components/Footer";
 import React from "react";
 
@@ -24,6 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
                         <Component {...pageProps} />
                     )}
                 </div>
+                <SpeedInsights />
                 <Analytics/>
                 <Footer/>
             </div>
