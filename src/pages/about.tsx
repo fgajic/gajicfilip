@@ -54,7 +54,7 @@ const AboutPage: React.FC<AboutPageProps> = ({ content }) => {
 };
 
 export async function getStaticProps() {
-  const aboutMeFilePath = path.join(process.cwd(),'./src/pages/about_me.mdx'); // Adjust the path as per your file structure
+  const aboutMeFilePath = path.join(process.cwd(),'./src/about_me.mdx'); // Adjust the path as per your file structure
   const fileContents = fs.readFileSync(aboutMeFilePath, 'utf8');
   const { content, data } = matter(fileContents);
   const mdxSource = await serialize(content);
