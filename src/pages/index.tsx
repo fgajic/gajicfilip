@@ -13,7 +13,7 @@ export default function Home({blogPosts, guidePosts}: InferGetStaticPropsType<ty
             </Head>
             <main>
                 <p className={"display-small on-surface-text mt-8"}>
-                    {`I am Filip, a DevOps Engineer from Serbia who is passionate about exploring and experimenting with new technologies.`}<br/>
+                    {`I am Filip, a Senior DevOps Engineer from Serbia.`}<br/>
                     {`On this website, you will discover my blog posts and guidance articles primarily focused on SysOps and DevOps topics.`}
                 </p>
 

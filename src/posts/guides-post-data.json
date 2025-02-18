@@ -1,3 +1,1 @@
-[
-    {"fontMatter":{"title":"Setting Up Nginx Web Server on Linux","teaser": "Guide for setting up and configuring Nginx on Linux. From installation to firewall configuration, unlock the power of Nginx for your web hosting needs","date":"22.02.2024."},"id":"setup-nginx"}
-]
+[{"fontMatter":{"title":"Nginx: Web Server Implementation Guide","teaser":"Technical analysis of Nginx deployment architectures","date":"18.02.2025."},"id":"setup-nginx"}]
