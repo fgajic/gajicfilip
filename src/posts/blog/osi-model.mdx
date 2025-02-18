@@ -12,102 +12,22 @@ The Open Systems Interconnection (OSI) model, developed by ISO in 1984, remains 
 
 ## Layer Architecture
 
-### Layer 7: Application Layer
+### Layer 1: Physical Layer
 
-The application layer serves as the direct interface between network communications and user applications. This layer implements:
-
-#### Protocol Examples
-* HTTP/HTTPS: Web traffic management
-* FTP: File transfer operations
-* SMTP: Email transmission
-* DNS: Name resolution services
-* SSH: Secure shell operations
-
-#### Technical Implementation
-* API endpoints
-* Data formatting
-* Protocol handshakes
-* Session management
-* Authentication mechanisms
-
-### Layer 6: Presentation Layer
-
-The presentation layer handles data translation and encryption, focusing on:
-
-#### Core Functions
-* Data encryption/decryption
-* Character encoding translation
-* Data compression
-* MIME encoding
-* Format conversion
+## Physical layer handles raw bit transmission:
+#### Signal Characteristics
+* Voltage levels
+* Bit timing
+* Signal modulation
+* Cable specifications
+* Connector standards
 
 #### Implementation Details
-* TLS/SSL protocol operations
-* JPEG/GIF image formatting
-* ASCII/EBCDIC conversion
-* Data serialization
-* Compression algorithms
-
-### Layer 5: Session Layer
-
-Session layer manages communication sessions between applications:
-
-#### Key Responsibilities
-* Session establishment
-* Session maintenance
-* Session termination
-* Checkpoint management
-* Recovery procedures
-
-#### Technical Components
-* NetBIOS operations
-* RPC mechanisms
-* SQL session handling
-* Authentication tokens
-* State management
-
-### Layer 4: Transport Layer
-
-The transport layer ensures reliable data delivery through:
-
-#### Protocol Implementation
-* TCP (Transmission Control Protocol)
-  * Three-way handshake
-  * Flow control mechanisms
-  * Error recovery
-  * Ordered delivery
-  * Connection management
-
-* UDP (User Datagram Protocol)
-  * Connectionless transmission
-  * Best-effort delivery
-  * Minimal overhead
-  * Broadcast support
-
-#### Technical Specifications
-* Segment sequencing
-* Port number management
-* Congestion control
-* Buffer management
-* Checksum verification
-
-### Layer 3: Network Layer
-
-Network layer handles logical addressing and routing:
-
-#### Core Functions
-* IP addressing
-* Packet routing
-* Fragmentation
-* Reassembly
-* QoS management
-
-#### Protocol Implementation
-* IPv4/IPv6 addressing
-* ICMP error handling
-* OSPF routing
-* BGP path selection
-* IPSec security
+* Manchester encoding
+* PAM signaling
+* Clock recovery
+* Noise mitigation
+* Signal regeneration
 
 ### Layer 2: Data Link Layer
 
@@ -134,23 +54,102 @@ The data link layer manages physical addressing and media access:
 * VLAN tagging
 * ARP protocol
 
-### Layer 1: Physical Layer
+### Layer 3: Network Layer
 
-Physical layer handles raw bit transmission:
+Network layer handles logical addressing and routing:
 
-#### Signal Characteristics
-* Voltage levels
-* Bit timing
-* Signal modulation
-* Cable specifications
-* Connector standards
+#### Core Functions
+* IP addressing
+* Packet routing
+* Fragmentation
+* Reassembly
+* QoS management
+
+#### Protocol Implementation
+* IPv4/IPv6 addressing
+* ICMP error handling
+* OSPF routing
+* BGP path selection
+* IPSec security
+
+### Layer 4: Transport Layer
+
+The transport layer ensures reliable data delivery through:
+
+#### Protocol Implementation
+* TCP (Transmission Control Protocol)
+  * Three-way handshake
+  * Flow control mechanisms
+  * Error recovery
+  * Ordered delivery
+  * Connection management
+
+* UDP (User Datagram Protocol)
+  * Connectionless transmission
+  * Best-effort delivery
+  * Minimal overhead
+  * Broadcast support
+
+#### Technical Specifications
+* Segment sequencing
+* Port number management
+* Congestion control
+* Buffer management
+* Checksum verification
+
+### Layer 5: Session Layer
+
+Session layer manages communication sessions between applications:
+
+#### Key Responsibilities
+* Session establishment
+* Session maintenance
+* Session termination
+* Checkpoint management
+* Recovery procedures
+
+#### Technical Components
+* NetBIOS operations
+* RPC mechanisms
+* SQL session handling
+* Authentication tokens
+* State management
+
+### Layer 6: Presentation Layer
+
+The presentation layer handles data translation and encryption, focusing on:
+
+#### Core Functions
+* Data encryption/decryption
+* Character encoding translation
+* Data compression
+* MIME encoding
+* Format conversion
 
 #### Implementation Details
-* Manchester encoding
-* PAM signaling
-* Clock recovery
-* Noise mitigation
-* Signal regeneration
+* TLS/SSL protocol operations
+* JPEG/GIF image formatting
+* ASCII/EBCDIC conversion
+* Data serialization
+* Compression algorithms
+
+### Layer 7: Application Layer
+
+The application layer serves as the direct interface between network communications and user applications. This layer implements:
+
+#### Protocol Examples
+* HTTP/HTTPS: Web traffic management
+* FTP: File transfer operations
+* SMTP: Email transmission
+* DNS: Name resolution services
+* SSH: Secure shell operations
+
+#### Technical Implementation
+* API endpoints
+* Data formatting
+* Protocol handshakes
+* Session management
+* Authentication mechanisms
 
 ## Real-world Applications
 
@@ -199,24 +198,12 @@ Network issues can be systematically diagnosed using the OSI model:
 
 Each OSI layer requires specific security measures:
 
-#### Application Layer
-* Input validation
-* Authentication
-* Authorization
-* API security
-* Data sanitization
-
-#### Presentation Layer
-* Encryption protocols
-* Certificate management
-* Key exchange
-* Algorithm selection
-
-#### Network Layer
-* Access control lists
-* Route filtering
-* IPSec implementation
-* Packet inspection
+#### Physical Layer
+* Physical access control
+* Cable shielding
+* Port security
+* Signal encryption
+* Tamper detection
 
 #### Data Link Layer
 * MAC filtering
@@ -224,15 +211,52 @@ Each OSI layer requires specific security measures:
 * Storm control
 * MACsec encryption
 
+#### Network Layer
+* Access control lists
+* Route filtering
+* IPSec implementation
+* Packet inspection
+
+#### Transport Layer
+* TLS/SSL implementation
+* Port security
+* Connection filtering
+* DoS protection
+
+#### Session Layer
+* Session encryption
+* Token validation
+* Timeout management
+* State validation
+
+#### Presentation Layer
+* Encryption protocols
+* Certificate management
+* Key exchange
+* Algorithm selection
+
+#### Application Layer
+* Input validation
+* Authentication
+* Authorization
+* API security
+* Data sanitization
+
 ## Performance Optimization
 
 ### Layer-specific Enhancements
 
-#### Transport Layer
-* TCP window scaling
-* Buffer tuning
-* Congestion algorithms
-* Protocol selection
+#### Physical Layer
+* Signal quality optimization
+* Cable selection
+* Hardware tuning
+* Interference reduction
+
+#### Data Link Layer
+* Frame size optimization
+* Flow control tuning
+* Error correction
+* Channel selection
 
 #### Network Layer
 * Route optimization
@@ -240,11 +264,11 @@ Each OSI layer requires specific security measures:
 * Traffic shaping
 * Load balancing
 
-#### Data Link Layer
-* Frame size optimization
-* Flow control tuning
-* Error correction
-* Channel selection
+#### Transport Layer
+* TCP window scaling
+* Buffer tuning
+* Congestion algorithms
+* Protocol selection
 
 ## Conclusion
 
