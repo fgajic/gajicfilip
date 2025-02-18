@@ -6,6 +6,7 @@ import {PostSearchModel, PostType} from "@/domain/post";
 import axios from "axios";
 import {SearchResponse} from "@/pages/api/searchposts";
 import {debounce} from "lodash";
+import {sortPostsByDate} from "@/utils/sortPosts";
 
 export type Props = {
     postType: PostType;
@@ -23,26 +24,32 @@ function postTypeSlug(postType: PostType): string {
 
 export default function PostsList({postType, showSearch}: Props) {
     const router = useRouter();
-
     const [posts, setPosts] = useState<PostSearchModel[]>([]);
     const [isFetching, setIsFetching] = useState<boolean>(false);
     const [initialQuery, setInitialQuery] = useState<string>("");
-
     const abortController = new AbortController();
-    const search = debounce(async (query: string) => {
 
+    const search = debounce(async (query: string) => {
         setIsFetching(true);
 
-        await axios.get<SearchResponse>(
-            `./api/searchposts?postType=${postType}&query=${query}`,
-            {signal: abortController.signal})
-            .then(async result => {
-                setPosts(result.data.results);
-                setIsFetching(false);
-                await router.push(`/${postTypeSlug(postType)}?query=${encodeURIComponent(query)}`, undefined, {shallow: true});
-            })
-            .catch(() => {
-            });
+        try {
+            const result = await axios.get<SearchResponse>(
+                `./api/searchposts?postType=${postType}&query=${query}`,
+                {signal: abortController.signal}
+            );
+            // Sort the posts by date before setting them
+            const sortedPosts = sortPostsByDate(result.data.results);
+            setPosts(sortedPosts);
+            setIsFetching(false);
+            await router.push(
+                `/${postTypeSlug(postType)}?query=${encodeURIComponent(query)}`, 
+                undefined, 
+                {shallow: true}
+            );
+        } catch (error) {
+            // Handle error if needed
+            setIsFetching(false);
+        }
     }, 300);
 
     useEffect(() => {
@@ -55,41 +62,32 @@ export default function PostsList({postType, showSearch}: Props) {
         return () => {
             abortController.abort();
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.isReady]);
 
     return (
         <>
-            {
-                router.isReady &&
+            {router.isReady && (
                 <>
-                    {
-                        showSearch &&
+                    {showSearch && (
                         <div className={"flex justify-center mt-4"}>
                             <SearchInput onChange={search} initialValue={initialQuery}/>
                         </div>
-                    }
-                    {
-                        !isFetching && posts.length > 0 &&
-                        <>
-                            <div className={"space-y-5 mt-4"}>
-                                {
-                                    posts.map((post) => (
-                                        <PostItem key={post.id} post={post}/>
-                                    ))
-                                }
-                            </div>
-                        </>
-                    }
-                    {
-                        isFetching &&
+                    )}
+                    {!isFetching && posts.length > 0 && (
+                        <div className={"space-y-5 mt-4"}>
+                            {posts.map((post) => (
+                                <PostItem key={post.id} post={post}/>
+                            ))}
+                        </div>
+                    )}
+                    {isFetching && (
                         <div className={"flex justify-center mt-4"}>
                             <p className={"body-large on-surface-text"}>Fetching</p>
                         </div>
-                    }
+                    )}
                 </>
-            }
+            )}
         </>
-    )
+    );
 }
