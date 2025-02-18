@@ -23,7 +23,7 @@ export default function Footer() {
                 <Divider />
                 <div className="flex min-h-full text-center h-14">
                     <div className="py-2 px-5 min-w-full flex flex-row items-center">
-                        <p className="outline-text">© 2024 {AuthorInfo.fullName}. All rights reserved.</p>
+                        <p className="outline-text">© 2025 {AuthorInfo.fullName}. All rights reserved.</p>
                         <a id="csconsentlink" className="outline-text hover:underline cursor-pointer ml-auto">Cookies</a>
                     </div>
                 </div>
