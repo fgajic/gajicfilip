@@ -1,0 +1,182 @@
+# Monitoring Everything: Setting Up Prometheus, Grafana, and Loki with Terraform
+
+## Introduction
+
+Modern infrastructure demands comprehensive observability through metrics, logs, and alerts. This guide explores implementing a complete monitoring stack using Prometheus, Grafana, and Loki, orchestrated through Infrastructure as Code with Terraform. The architecture enables data-driven operations while maintaining scalability and reliability across cloud-native environments.
+
+## Core Components
+
+### Prometheus Architecture
+
+Prometheus implements a pull-based metrics collection system utilizing time-series data storage:
+
+#### Key Features
+* Service discovery integration
+* PromQL query language
+* Alert management
+* Target scraping
+* Data retention policies
+
+#### Technical Implementation
+```hcl
+# Prometheus Terraform configuration
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus"
+  namespace  = "monitoring"
+
+  set {
+    name  = "server.persistentVolume.size"
+    value = "50Gi"
+  }
+
+  set {
+    name  = "server.retention"
+    value = "15d"
+  }
+}
+```
+
+### Grafana Deployment
+
+Grafana provides visualization and analytics capabilities through:
+
+#### Core Functions
+* Dashboard management
+* Data source integration
+* Alert configuration
+* User authentication
+* Plugin ecosystem
+
+#### Implementation Details
+```hcl
+# Grafana Terraform setup
+resource "helm_release" "grafana" {
+  name       = "grafana"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "grafana"
+  namespace  = "monitoring"
+
+  set {
+    name  = "persistence.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "adminPassword"
+    value = var.grafana_admin_password
+  }
+}
+```
+
+### Loki Configuration
+
+Loki implements log aggregation with label-based indexing:
+
+#### Technical Components
+* Log streaming
+* Label indexing
+* Query processing
+* Storage optimization
+* Retention management
+
+#### Deployment Specification
+```hcl
+# Loki setup with Terraform
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki-stack"
+  namespace  = "monitoring"
+
+  set {
+    name  = "persistence.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "loki.auth_enabled"
+    value = "true"
+  }
+}
+```
+
+## Kubernetes Integration
+
+### Service Discovery
+
+Kubernetes service discovery enables automatic target detection:
+
+#### Implementation
+```yaml
+# prometheus-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - default
+            - production
+```
+
+### Resource Monitoring
+
+Monitor container and node metrics through:
+
+#### Key Metrics
+* CPU utilization
+* Memory consumption
+* Network traffic
+* Disk operations
+* Pod health status
+
+## Alert Configuration
+
+### Alert Rules
+
+Define meaningful alert thresholds:
+
+```yaml
+# prometheus-rules.yaml
+groups:
+- name: kubernetes
+  rules:
+  - alert: HighCPUUsage
+    expr: container_cpu_usage_seconds_total > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "Container CPU usage exceeding 80%"
+```
+
+### Alert Routing
+
+Configure notification channels through:
+
+* Email integration
+* Slack notifications
+* PagerDuty alerts
+* Custom webhooks
+* OpsGenie integration
+
+## Dashboard Implementation
+
+### Resource Visualization
+
+Create actionable dashboards displaying:
+
+#### System Metrics
+* Infrastructure utilization
+* Application performance
+* Error rates
+* Latency measurements
+* Throughput statistics
+
+#### Example Dashboard Query 
