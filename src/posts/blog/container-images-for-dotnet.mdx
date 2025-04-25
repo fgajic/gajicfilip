@@ -1,0 +1,290 @@
+---
+title: "Production-Ready Container Images for .NET Apps"
+teaser: "Building container images is more art than science. This guide shares insights and lessons learned from years of experience in creating robust .NET container images that won't keep teams up at night."
+date: 20.02.2024.
+---
+
+# Building Production-Ready .NET Container Images: Lessons from Experience
+
+The journey into containerization often begins with the misconception that containers are just lightweight virtual machines. Many developers have learned the hard way that creating production-ready container images for .NET applications requires understanding the trade-offs and making informed decisions. This guide shares valuable lessons learned from real-world experience.
+
+## The Art of Container Image Architecture
+
+One common mistake when starting with containers is treating them like virtual machines. As discussed in the [article on virtualization vs containerization](https://gajicfilip.com/blog/virtualization-vs-containerization), these are fundamentally different technologies. While virtual machines are like separate houses with their own utilities, containers are more like apartments in a building - they share the foundation (host OS kernel) but maintain separate living spaces.
+
+Containers can be thought of as Russian nesting dolls - each layer matters, and how they're stacked can make or break a deployment. Unlike virtual machines that include entire operating systems, containers only package the application and its dependencies, making them much lighter and faster to deploy.
+
+### The Layer Game
+
+A critical lesson in container optimization is understanding that every `RUN` command creates a new layer. Consider this common but inefficient approach:
+
+```dockerfile
+# The inefficient approach
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y wget
+RUN apt-get clean
+```
+
+The optimized version combines these operations into a single layer:
+
+```dockerfile
+# The optimized approach
+RUN apt-get update && \
+    apt-get install -y curl wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+```
+
+The difference is significant - the first approach creates four layers, while the second creates just one. This optimization directly impacts CI/CD pipeline performance. Unlike virtual machines, where layer optimization isn't a concern, container performance and build times are heavily influenced by layer structure.
+
+### The Dependency Dance
+
+A proven strategy for speeding up builds is the dependency-first approach. Instead of copying all files at once, the project files are copied first:
+
+```dockerfile
+# Copy the bare minimum first
+COPY ["src/MyApp/MyApp.csproj", "src/MyApp/"]
+COPY ["src/MyApp.Core/MyApp.Core.csproj", "src/MyApp.Core/"]
+RUN dotnet restore
+
+# Then bring in the rest
+COPY . .
+```
+
+This approach allows Docker to reuse cached layers from the restore step when only source code changes. It's similar to having a pre-baked cake that just needs frosting.
+
+## Choosing Your Base Image: The Eternal Debate
+
+### The Distroless Dilemma
+
+Distroless images represent a minimalist's dream - no bloat, no unnecessary tools, just the application. However, they present significant debugging challenges, especially during production incidents.
+
+**Key advantages:**
+- Minimal size
+- Enhanced security
+- Reduced attack surface
+
+**Notable limitations:**
+- No shell access (secure but challenging for debugging)
+- Limited diagnostic tools
+- Complex log collection
+
+A common approach to balance these trade-offs involves using different images for development and production:
+
+```dockerfile
+# Development image - debugging environment
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
+WORKDIR /app
+COPY . .
+RUN dotnet restore
+RUN dotnet build
+ENTRYPOINT ["dotnet", "watch", "run"]
+
+# Production image - optimized for security
+FROM gcr.io/distroless/cc-debian12 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "MyApp.dll"]
+```
+
+### The Alpine Alternative
+
+Alpine Linux serves as a versatile container image option - compact yet powerful. However, .NET applications can face challenges with Alpine's musl libc implementation, sometimes affecting performance.
+
+A well-tested Alpine configuration includes:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+WORKDIR /app
+EXPOSE 8080
+
+# Performance optimization settings
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV ASPNETCORE_URLS=http://+:8080
+
+# Essential troubleshooting tools
+RUN apk add --no-cache procps lsof
+```
+
+## Security: The Never-Ending Battle
+
+### Vulnerability Scanning: Essential CI/CD Component
+
+Vulnerability scanning represents a critical component of container security. Multiple scanners in the pipeline provide comprehensive coverage:
+
+```yaml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker image
+        run: docker build -t myapp:${{ github.sha }} .
+      
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myapp:${{ github.sha }}
+          format: 'sarif'
+          output: trivy-results.sarif
+```
+
+### Hardening: Security Best Practices
+
+A comprehensive security hardening checklist includes:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+# User and group management
+RUN groupadd -r appgroup && \
+    useradd -r -g appgroup -s /sbin/nologin appuser && \
+    chown -R appuser:appgroup /app
+
+# File permissions
+RUN chmod 750 /app && \
+    find /app -type d -exec chmod 750 {} \; && \
+    find /app -type f -exec chmod 640 {} \;
+
+# Resource limits
+RUN echo "appuser hard nofile 65535" >> /etc/security/limits.conf
+
+# Environment hardening
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+ENV COMPlus_EnableDiagnostics=0
+
+USER appuser
+```
+
+## Performance: The Fine Art of Tuning
+
+### Memory Management: Garbage Collection Optimization
+
+Effective .NET garbage collection tuning in containers requires careful configuration:
+
+```dockerfile
+# Memory optimization settings
+ENV DOTNET_GCHeapHardLimit=0x10000000
+ENV DOTNET_GCHeapHardLimitPercent=0
+```
+
+### CPU Optimization: Thread Management
+
+Thread management in containers requires specific configuration:
+
+```dockerfile
+# CPU optimization settings
+ENV DOTNET_Thread_UseAllCpuGroups=0
+ENV DOTNET_ThreadPool_ThreadCountMax=16
+ENV DOTNET_ThreadPool_ThreadCountMin=4
+```
+
+## Monitoring: Essential Observability
+
+### Health Checks: Critical Monitoring Component
+
+Comprehensive health checks provide early warning of application issues:
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+```
+
+### Logging: Structured Observability
+
+Structured logging enables effective troubleshooting:
+
+```dockerfile
+ENV LOG_LEVEL=Information
+ENV LOG_FORMAT=json
+ENV LOG_PATH=/app/logs
+```
+
+## CI/CD: Automated Deployment
+
+A robust GitHub Actions workflow includes:
+
+```yaml
+name: Advanced Container Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: |
+            image=moby/buildkit:master
+            network=host
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            myapp:latest
+            myapp:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+```
+
+## Production Deployment: Operational Excellence
+
+### Resource Management: Optimal Configuration
+
+Effective resource allocation follows the Goldilocks principle:
+
+```yaml
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+```
+
+### High Availability: Production Resilience
+
+A robust high availability configuration ensures service continuity:
+
+```yaml
+replicas: 3
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+```
+
+## Final Thoughts
+
+Building production-ready container images represents an ongoing journey of improvement. Several principles remain non-negotiable:
+
+1. **Security First**: Essential for maintaining system integrity
+2. **Performance Matters**: Critical for user experience
+3. **Observability is Key**: Required for effective troubleshooting
+4. **Automation is Essential**: Reduces human error and improves consistency
+
+The optimal container image balances security, performance, and maintainability while meeting specific use case requirements. Success lies not in blindly following best practices but in understanding trade-offs and making informed decisions.
+
+What experiences have you had with containerizing .NET applications? Share your insights and lessons learned!
