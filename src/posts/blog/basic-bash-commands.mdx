@@ -18,6 +18,17 @@ cd /      # Access root directory
 pwd       # Print working directory path
 ```
 
+#### Examples you can run
+```bash
+# Create a temporary workspace and move into it
+mkdir -p ~/tmp-bash-demo && cd ~/tmp-bash-demo
+
+# Show it's initially empty, then create a couple of items and navigate
+ls -la
+mkdir notes && touch README.txt
+cd notes && pwd && cd ..
+```
+
 ### File Management
 ```bash
 mkdir dir         # Create directory structure
@@ -29,11 +40,49 @@ mv file1 file2   # Move/rename file
 touch file       # Update file timestamp
 ```
 
+#### Examples you can run (uses small public files)
+```bash
+# Stay inside ~/tmp-bash-demo from the previous step
+pwd
+
+# Download a small, stable text file to work with
+# W3C provides a tiny test file that is safe to fetch
+curl -L https://www.w3.org/TR/PNG/iso_8859-1.txt -o sample.txt
+
+# Duplicate and rename files
+cp sample.txt copy-of-sample.txt
+mv copy-of-sample.txt notes/renamed-sample.txt
+
+# Create and remove directories/files
+mkdir -p archives
+touch empty.log
+rm empty.log
+rm -rf archives
+```
+
 ### File Content Operations
 ```bash
 cat file         # Output file contents
 cat > file      # Write stdin to file
 cat >> file     # Append stdin to file
+```
+
+#### Examples you can run
+```bash
+# View the first few lines of the downloaded file
+head -n 5 sample.txt
+
+# Create a quick note file via stdin redirection
+cat > notes/todo.txt <<'EOF'
+- read the downloaded sample
+- write a short summary
+EOF
+
+# Append another line
+echo "- archive when done" >> notes/todo.txt
+
+# Display results
+cat notes/todo.txt
 ```
 
 ## System Information
@@ -108,19 +157,150 @@ info command         # GNU documentation
 command --help       # Usage information
 ```
 
+## Beginner Tips
+
+### Paths and Navigation
+```bash
+# Absolute vs relative paths
+cd /usr/bin       # absolute path (starts with /)
+cd ..             # relative path (parent directory)
+pwd               # print current directory
+
+# Special directories
+echo ". is" $(pwd)          # current directory
+echo ".. is" $(cd ..; pwd)   # parent directory
+```
+
+### Hidden Files
+```bash
+ls -a            # show entries starting with .
+touch .hidden    # create a hidden file
+ls -la           # verify it exists
+```
+
+### Permissions Basics
+```bash
+ls -l sample.txt     # view permissions like rw-r--r--
+chmod u+x sample.txt # give owner execute (beginner note: rarely needed for plain text)
+ls -l sample.txt
+```
+
+### Safe Deletion
+```bash
+rm -i sample.txt     # interactive prompt before deleting
+# Avoid using sudo and rm -rf until later lessons
+```
+
+### Viewing Files Safely
+```bash
+less sample.txt   # scroll with arrows/PageUp/PageDown; press q to quit
+cat sample.txt    # prints entire file at once (fine for small files)
+```
+
+### Ownership Awareness
+```bash
+whoami         # your username
+id             # uid, groups
+ls -l          # check file owner and group
+```
+
+### Disk and Memory Basics
+```bash
+df -h          # disk usage by filesystem (human-readable)
+du -sh .       # size of current directory
+free -h        # memory (if not available, try: cat /proc/meminfo)
+```
+
+### Network Sanity Checks
+```bash
+ping -c 2 example.com        # test connectivity (Ctrl+C to stop early)
+curl -I https://example.com  # fetch only HTTP headers
+```
+
+### Process Awareness
+```bash
+ps aux | head   # list running processes (first lines)
+top             # interactive process viewer (q to quit)
+```
+
+### Getting Help
+```bash
+man ls          # manual page (q to quit)
+ls --help       # quick usage summary
+tldr ls         # concise examples (if tldr is installed)
+```
+
+### Keyboard Shortcuts
+- Ctrl+C: interrupt a running program
+- Ctrl+D: end of input / logout in some shells
+- Ctrl+R: search command history; press Enter to run, Esc to edit
+- Tab: autocomplete commands and paths
+
 ## Implementation Notes
 
 ### Security Considerations
-- Execute permissions verification
-- Path variable validation
-- Quotation mark handling
-- Special character escaping
+- Execute permissions verification: Ensure programs are executable only when intended.
+```bash
+# Check if a known binary is executable (read-only example)
+ls -l /bin/ls
+test -x /bin/ls && echo "ls is executable"
+
+# Prefer explicit relative/absolute paths when running your own programs
+# Avoid adding '.' (current directory) to PATH to reduce accidental execution
+```
+
+- Path variable validation: Control which directories are searched for executables.
+```bash
+# Inspect PATH and how a command is resolved
+echo "$PATH"
+command -v ls      # Shows the path that will be used for 'ls'
+
+# Keep untrusted locations (like '.') out of PATH
+```
+
+- Quotation mark handling: Quote variables to avoid word-splitting and globbing.
+```bash
+FILENAME="My File With Spaces.txt"
+echo "demo" > "$FILENAME"      # Correct: file name preserved
+cat $FILENAME 2>/dev/null        # Incorrect: will try to read 5 separate tokens
+cat "$FILENAME"                 # Correct
+```
+
+- Special character escaping: Escape or quote shell metacharacters.
+```bash
+# Create a file literally named * (asterisk)
+touch '\*'
+# Correctly reference it with quoting
+ls -l "*"
+# When using regex-like characters in grep, quote to prevent the shell from expanding
+grep "main()" sample.txt
+```
 
 ### Performance Optimization
-- Command history utilization
-- Tab completion implementation
-- Alias configuration
-- Shell script execution
+- Command history utilization: Reuse previous commands efficiently.
+```bash
+history | tail -n 5      # View recent commands
+!!                       # Re-run last command
+!curl                    # Re-run last command that started with 'curl'
+Ctrl+R                   # Interactive reverse search (press in a real shell)
+```
+
+- Tab completion implementation: Let the shell complete paths/commands to reduce typing.
+```bash
+# In an interactive shell, type:
+#   cat sam<Tab>
+# It should complete to 'sample.txt' if present in the current directory
+```
+
+- Alias configuration: Create short names for frequent commands.
+```bash
+alias ll='ls -lah'
+ll | head
+
+# Persist aliases by adding them to ~/.bashrc or ~/.bash_profile
+```
+
+ 
 
 ## Execution Environment
 
@@ -130,11 +310,87 @@ command --help       # Usage information
 - Local variable scope
 - Export mechanisms
 
+#### Examples you can run
+```bash
+# View PATH and see where commands come from
+echo "$PATH"
+command -v ls
+
+# Temporarily add a directory to PATH for this shell only
+TEMP_DIR="$HOME/tmp-bin"; mkdir -p "$TEMP_DIR"
+PATH="$TEMP_DIR:$PATH"; export PATH
+echo "$PATH" | tr ':' '\n' | head
+
+# Local vs exported variables
+FOO="not exported"
+BAR="exported"; export BAR
+
+# Child processes inherit only exported variables
+bash -c 'printf "FOO=%s\nBAR=%s\n" "$FOO" "$BAR"'
+
+# Subshell scope (parent remains unchanged)
+(BAZ=subshell_only; echo "Inside subshell BAZ=$BAZ")
+echo "Outside subshell BAZ=$BAZ"  # likely empty
+```
+
 ### Process Management
 - Job control implementation
 - Background execution
 - Process prioritization
 - Signal handling
+
+#### Examples you can run (safe, short-lived)
+```bash
+# Start a 30-second sleep in the foreground, then stop it with Ctrl+Z to suspend
+sleep 30
+# Press Ctrl+Z now to suspend the job
+
+# List jobs, resume in background, then bring to foreground
+jobs
+bg %1
+fg %1
+
+# Run directly in background with & and disown if desired
+sleep 20 &
+jobs
+
+# Lower priority (positive nice value means lower priority)
+nice -n 10 sleep 25 &
+ps aux | grep sleep | head
+
+# Send a gentle termination signal to the first job (replace %1 with correct job id if needed)
+jobs
+kill -TERM %1
+
+# If a process ignores TERM, use INT or KILL as last resort
+# kill -INT %1   # like pressing Ctrl+C
+# kill -KILL %1  # force kill
+```
+
+## Student Pick: Pipes and Find Basics
+
+### Pipes 101
+```bash
+ls | wc -l                 # count directory entries
+curl -s https://example.com | head -n 5   # preview first 5 lines of output
+echo "error: something" | grep error      # filter lines containing a word
+
+# Redirect stdout and stderr
+echo "hello" > out.txt     # overwrite
+echo "again" >> out.txt    # append
+ls not_a_file 2> errors.log # send errors to a file
+```
+
+### find for searching files
+```bash
+# From your demo folder
+cd ~/tmp-bash-demo
+
+find . -type f -name "*.txt"            # find text files
+find . -type f -size -10k               # smaller than 10 KB
+find . -type f -mtime -1                # modified in last 24 hours
+find . -type f -name "*sample*" -print  # print matched paths
+```
 
 ## Conclusion
 
