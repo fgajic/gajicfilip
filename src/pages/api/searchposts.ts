@@ -82,15 +82,17 @@ export class PostSearcher {
     }
 
     private static generateSearchModels(articles: Article[], postType: PostType): PostSearchModel[] {
-        return articles.map(e => {
-            const postInfo = {
-                title: e.fontMatter.title,
-                stringDate: e.fontMatter.date,
-                teaser: e.fontMatter.teaser
-            } as PostInfo
+        return articles
+            .filter(e => e?.fontMatter && e.fontMatter.title && e.fontMatter.date && e.fontMatter.teaser)
+            .map(e => {
+                const postInfo = {
+                    title: e.fontMatter.title,
+                    stringDate: e.fontMatter.date,
+                    teaser: e.fontMatter.teaser
+                } as PostInfo
 
-            return {info: postInfo, id: e.id, type: postType} as PostSearchModel;
-        }).sort((a, b) => {
+                return {info: postInfo, id: e.id, type: postType} as PostSearchModel;
+            }).sort((a, b) => {
             // Newest first sort.
             const dateA = new Date(a.info.stringDate);
             const dateB = new Date(b.info.stringDate);

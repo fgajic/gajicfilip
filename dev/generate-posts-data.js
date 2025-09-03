@@ -5,7 +5,7 @@ import path from "path";
 import { blogDir, getSrcDirectoryPath, guidesDir, postsDir } from "./getSrcDirectoryPath.js";
 
 async function getFontMatter(filePath) {
-    const fileContent = fs.readFileSync(filePath);
+    const fileContent = fs.readFileSync(filePath, "utf8");
     const serialized = await serialize(fileContent, {
         mdxOptions: {
             remarkPlugins: [

@@ -2,6 +2,9 @@
   "name": "calmr-dev",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22 <23"
+  },
   "scripts": {
     "dev": "concurrently --kill-others  \"next dev\" \"node dev/posts-watcher.js\"",
     "build": "next build",
@@ -15,7 +18,7 @@
     "@next/mdx": "^13.4.7",
     "@types/lodash.debounce": "^4.0.7",
     "@types/luxon": "^3.3.2",
-    "@types/node": "20.3.1",
+    "@types/node": "^22.5.4",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "@vercel/analytics": "^1.0.2",
