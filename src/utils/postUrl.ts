@@ -6,6 +6,8 @@ function generateBasePostUrl(postType: PostType) {
             return "/blog/";
         case PostType.Guide:
             return "/guides/";
+        case PostType.Lab:
+            return "/labs/";
         default:
             return "";
     }

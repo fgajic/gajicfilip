@@ -71,12 +71,18 @@ function NavbarContent({ isMobile, onClick }: NavbarContentProps) {
   return (
     <>
       <NavbarLink href={"/blog"} onClick={onClick}><p className={textClass}>Blog</p></NavbarLink>
+      <NavbarLink href={"/labs"} onClick={onClick}><p className={textClass}>Labs</p></NavbarLink>
       <NavbarLink href={"/guides"} onClick={onClick}><p className={textClass}>Guides</p></NavbarLink>
       <NavbarLink href={"/about"} onClick={onClick}><p className={textClass}>About</p></NavbarLink>
       <div className={"flex items-center ml-auto"}>
         <NavbarLink href={AuthorInfo.linkedInUrl} openNewWindow>
           <svg className={"fill-[--md-sys-color-on-surface]"} xmlns="http://www.w3.org/2000/svg" width="24" height="24">
           <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+          </svg>
+        </NavbarLink>
+        <NavbarLink href={AuthorInfo.instagramUrl} openNewWindow>
+          <svg className={"fill-[--md-sys-color-on-surface]"} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <path d="M7 2h10c2.761 0 5 2.239 5 5v10c0 2.761-2.239 5-5 5H7c-2.761 0-5-2.239-5-5V7c0-2.761 2.239-5 5-5zm0 2C5.346 4 4 5.346 4 7v10c0 1.654 1.346 3 3 3h10c1.654 0 3-1.346 3-3V7c0-1.654-1.346-3-3-3H7zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM18 6.5a1.5 1.5 0 1 1-3.001.001A1.5 1.5 0 0 1 18 6.5z"/>
           </svg>
         </NavbarLink>
         <NavbarLink href={AuthorInfo.mediumUrl} openNewWindow>

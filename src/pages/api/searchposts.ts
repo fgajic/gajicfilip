@@ -3,6 +3,7 @@ import Fuse from "fuse.js";
 import {PostInfo, PostSearchModel, PostType} from "@/domain/post";
 import blogPostsData from "../../posts/blog-posts-data.json";
 import guidePostsData from "../../posts/guides-post-data.json"
+import labPostsData from "../../posts/labs-posts-data.json"
 import FuseResult = Fuse.FuseResult;
 
 export type SearchResponse = {
@@ -38,6 +39,9 @@ export class PostSearcher {
     private static guideFuse: Fuse<PostSearchModel>;
     private static guidePosts: PostSearchModel[]
 
+    private static labFuse: Fuse<PostSearchModel>;
+    private static labPosts: PostSearchModel[]
+
     static async search(query: string, postType: PostType): Promise<PostSearchModel[]> {
         if (this.blogFuse == undefined || this.guideFuse == undefined) {
             await this.cacheArticles();
@@ -48,6 +52,8 @@ export class PostSearcher {
                 return this.blogPosts;
             } else if (postType == PostType.Guide) {
                 return this.guidePosts;
+            } else if (postType == PostType.Lab) {
+                return this.labPosts;
             }
         }
 
@@ -56,6 +62,8 @@ export class PostSearcher {
             result = this.blogFuse.search(query);
         } else if (postType == PostType.Guide) {
             result = this.guideFuse.search(query);
+        } else if (postType == PostType.Lab) {
+            result = this.labFuse.search(query);
         }
 
         return result.map(e => e.item);
@@ -74,6 +82,15 @@ export class PostSearcher {
         this.guidePosts = this.generateSearchModels(guidePostsData as Article[], PostType.Guide);
         this.guideFuse = new Fuse(
             this.guidePosts,
+            {
+                threshold: 0.4,
+                keys: ['info.title']
+            }
+        );
+
+        this.labPosts = this.generateSearchModels(labPostsData as Article[], PostType.Lab);
+        this.labFuse = new Fuse(
+            this.labPosts,
             {
                 threshold: 0.4,
                 keys: ['info.title']

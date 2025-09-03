@@ -1,0 +1,256 @@
+Lab: Basic Navigation Commands in Linux
+Learning Objective
+By the end of this lab you will be able to:
+Open a terminal and find “where you are” in the filesystem.
+List files (including hidden ones) and read basic details (size, permissions, dates).
+Move between folders with absolute and relative paths.
+Create a small practice folder structure and move around it confidently.
+Use built-in help so you can keep learning on your own.
+
+
+Pre-Requisite
+Access to a Linux shell (any recent distro). Options:
+
+
+A local Linux machine or VM, or WSL on Windows, or SSH into a Linux VM.
+A terminal app (e.g., Terminal on macOS, Windows Terminal/PowerShell for WSL/SSH, or your distro’s terminal).
+No admin/root privileges needed.
+
+
+Tip: Everything in this lab happens inside a folder in your home directory, so it’s safe.
+
+Steps to Follow
+Part A — Warm-Up: Open Your Terminal
+
+Open your terminal and type:
+
+
+ echo "Hello Linux"; uname -a; echo "Shell:" $SHELL
+
+You should see a greeting, system info, and which shell you’re using (e.g., /bin/bash or /bin/zsh).
+
+
+
+Part B — “Where am I?” with pwd
+Print your current working directory:
+
+
+ pwd
+
+You’ll likely see something like /home/<username>. This is your home. The shortcut ~ also means “home”.
+
+Part C — Create a Safe Practice Playground
+
+Make a lab folder and jump into it:
+
+
+mkdir -p ~/nav-lab
+
+
+cd ~/nav-lab
+
+
+pwd
+
+
+
+
+Create a small directory tree:
+
+
+mkdir -p projects/app/{src,docs,logs}
+mkdir -p sandbox
+ls
+
+
+
+
+
+Create a few files:
+
+
+touch projects/app/README.md projects/app/src/main.py sandbox/notes.txt
+
+
+echo "Welcome to the lab" > WELCOME.txt
+
+
+
+Part D — Listing Files with ls
+Basic listing:
+
+
+ ls
+
+
+Long (detailed) listing:
+
+
+ ls -l
+
+You’ll see columns for permissions, owner, size, and modified date.
+
+
+Show hidden files (names starting with a dot):
+
+
+ ls -la
+
+
+Part E — Moving Around with cd
+Go into a directory (relative path):
+
+
+cd projects/app
+
+
+pwd
+
+
+Go up one level (parent):
+
+
+cd ..
+
+
+pwd
+
+
+Go home from anywhere:
+
+
+
+ cd ~
+
+
+pwd
+
+
+
+
+Go back to the previous location:
+
+cd -
+
+
+Jump with an absolute path (starts with /):
+
+
+cd /etc
+
+
+pwd
+
+
+Return to the lab with absolute or shortcut:
+
+
+ cd ~/nav-lab
+
+Cheat codes:
+. means “current directory”
+
+
+.. means “parent directory”
+
+
+~ means “home directory”
+
+
+cd - toggles between last two locations
+Part F — See What’s Here (and Only What You Need)
+List recursively:
+
+
+ ls -R
+
+
+List by time (newest last):
+
+
+ ls -lt
+
+
+Use globs (wildcards):
+
+
+ls *.txt
+
+
+ls p*
+
+
+Part G — Peek Inside Files
+Print contents:
+
+
+cat WELCOME.txt
+
+
+Page through (space to go down, q to quit):
+
+
+ less WELCOME.txt
+
+cat is quick for small files; less is comfy for longer ones.
+Part H — Hidden Files & Why They Matter
+Create a hidden file:
+
+
+echo "secret" > .hidden-config
+
+
+Compare:
+
+
+ls
+
+
+ls -a
+
+
+Hidden files appear only with -a. Many app configs live here.
+
+
+Part I — Paths: Absolute vs Relative (Hands-On)
+From ~/nav-lab, run:
+
+
+ cd projects/app/src
+
+
+pwd
+
+
+Relative path back to nav-lab:
+
+
+ cd ../../..
+
+
+pwd
+
+
+Absolute path straight to src again (change yourname if needed):
+
+
+
+ cd /home/$(whoami)/nav-lab/projects/app/src
+
+
+pwd
+
+
+Absolute paths are like full street addresses. Relative paths are “turn left at the corner” from where you are.
+
+Part J — Clean Up (Optional but Recommended)
+Stay in home before deleting:
+cd ~
+
+
+# safer: interactive prompt before recursive delete
+
+rm -rI ~/nav-lab
+
+⚠️ Be careful with rm -r. The -I (capital i) asks before deleting more than a few files.
+

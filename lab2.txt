@@ -1,0 +1,158 @@
+Lab: File Permissions in Linux
+Now that you’re comfortable with basic Linux navigation, let’s dive into how to read and change file permissions.
+Learning Objective
+By the end of this lab, you will be able to:
+Read permissions with ls -l and decode rwxr-x---.
+
+
+Change permissions using symbolic (u/g/o + - =) and numeric (755, 644) modes with chmod.
+
+
+Explain how permissions differ for files vs directories (what execute x means on a folder).
+
+
+(Optional) Change file ownership with chown and group with chgrp (requires sudo).
+Pre-Requisite
+A shell on any Linux system (local VM, WSL, or remote VM).
+
+
+No admin rights required for the core steps (optional sudo for ownership tasks).
+
+
+Basic terminal comfort: running commands and using cd.
+
+
+Steps to Follow
+Part A — Set Up a Safe Playground
+Open a terminal and create a lab folder:
+
+
+cd ~
+mkdir -p perm-lab
+cd perm-lab
+
+
+Create some test files and folders:
+
+
+echo "hello" > note.txt
+echo "secret" > secrets.txt
+mkdir -p data reports
+touch data/raw.csv reports/summary.md
+
+
+Part B — Read Permissions with ls -l
+List with details:
+
+
+ ls -l
+
+ 
+
+
+
+
+Sample output (yours will vary):
+
+-rw-r--r-- 1 you you    6 Aug 16 10:00 note.txt
+-rw-r--r-- 1 you you    7 Aug 16 10:00 secrets.txt
+drwxr-xr-x 2 you you 4096 Aug 16 10:00 data
+drwxr-xr-x 2 you you 4096 Aug 16 10:00 reports
+
+ How to read the left column:
+
+
+First char: - = file, d = directory.
+
+
+Next 3 char = user/owner (rwx)
+
+
+Next 3 char = group (rwx)
+
+
+Last 3 char = others (rwx)
+
+
+Quick meanings:
+
+
+r (read) file → open/read; directory → list names
+
+
+w (write) file → modify; directory → create/delete/rename inside
+
+
+x (execute) file → run; directory → “enter” (cd into / access)
+
+
+Part C — Change Permissions (Symbolic Mode)
+Symbolic: target u(ser), g(roup), o(thers), a(ll) + action + add / - remove / = set
+Make secrets.txt readable only by you (owner):
+
+
+chmod go-rwx secrets.txt
+ls -l secrets.txt
+
+
+Expect: -rw------- for secrets.txt.
+
+
+
+Allow group members to write to reports directory:
+
+
+chmod g+w reports
+ls -ld reports
+
+Expect something like: drwxrwxr-x (group now has w).
+
+Make note.txt executable (just to see the effect):
+
+
+chmod u+x note.txt
+ls -l note.txt
+
+Expect owner x: -rwxr--r-- 
+
+
+
+Part D — Change Permissions (Numeric/Octal Mode)
+Numbers add up: r=4, w=2, x=1.
+
+
+Examples: 7 (rwx), 6 (rw-), 5 (r-x), 4 (r--), 0 (---).
+Set note.txt to 644 (rw-r--r--):
+
+
+
+chmod 644 note.txt
+ls -l note.txt
+
+
+Set reports directory to 775 (rwxrwxr-x):
+
+
+chmod 775 reports
+ls -ld reports
+
+
+Typical patterns to remember:
+Files: 644 (owner can edit; everyone can read)
+Directories: 755 (owner full; others can enter & list)
+
+
+Part E — Directory Execute Bit (Why x Matters on Folders)
+Remove execute from data for others:
+
+
+chmod o-x data
+ls -ld data
+
+Others (o) can now see data exists (if r is set) but cannot enter it (cd data) without x.
+ls data
+
+
+You (owner) still have x, so you can list. Another user without x couldn’t cd into it.
+Rule of thumb: For directories, x is the “you may enter” door pass.
+

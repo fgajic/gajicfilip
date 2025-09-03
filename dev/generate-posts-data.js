@@ -2,7 +2,7 @@ import fs from "fs";
 import { serialize } from "next-mdx-remote/serialize";
 import { remarkCodeHike } from "@code-hike/mdx";
 import path from "path";
-import { blogDir, getSrcDirectoryPath, guidesDir, postsDir } from "./getSrcDirectoryPath.js";
+import { blogDir, getSrcDirectoryPath, guidesDir, postsDir, labsDir } from "./getSrcDirectoryPath.js";
 
 async function getFontMatter(filePath) {
     const fileContent = fs.readFileSync(filePath, "utf8");
@@ -49,4 +49,7 @@ export async function generatePostsData() {
 
     const guidePosts = await getPostInfoFromDir(guidesDir);
     writePostDataToJson(guidePosts, path.join(srcDirectory, "posts", "guides-post-data.json"));
+
+    const labPosts = await getPostInfoFromDir(labsDir);
+    writePostDataToJson(labPosts, path.join(srcDirectory, "posts", "labs-posts-data.json"));
 }

@@ -1,0 +1,301 @@
+Linux Basics
+Part - 1
+
+What are we going to learn?
+> Introduction to Operating System
+> Linux Operating System, its use cases, and architecture
+> Virtualisation
+> Working with CLI and basic navigation
+> Users and Groups
+> File Permissions
+> File Editor - vi/vim
+
+You use a computer or phone every day—laptop, desktop, Android, iPhone. 
+
+But how do you actually use it? 
+
+Who saves your files, opens your apps, and connects to the screen, keyboard, and internet?
+
+Answer is the operating system (OS), example - Linux, Windows, Android, iOS, Mac, etc.
+Think of the OS as your device’s manager. 
+It sits between you, your apps (like WhatsApp, Gmail, games), and the hardware (CPU, memory, storage). 
+When you tap an icon, the OS loads the app, gives it memory, lets it use the screen and speakers, and keeps everything running smoothly. 
+Without an OS, your device couldn’t run programs at all.
+
+
+An operating system is system software that manages a computer’s hardware and software resources. 
+
+You can think of it as the computer’s manager. 
+
+Users interacts with the software by running applications and programs. 
+
+An Operating System makes sure programs get the resources (like CPU time and memory space) they need, and it runs programs in an orderly way.
+
+> Resource Management
+> Memory Management
+> File and Storage Management
+> Hardware and Device Management
+> Provides User Interface
+Functions of an Operating System
+Resource management: 
+The OS is the one responsible for assigning the resources like CPU, Memory to the programs running on the computer.
+Memory management: 
+The OS places each running program into RAM (fast memory) when it starts, and removes it when it’s done.
+File and storage management: 
+The OS organizes how data and documents are saved on disk. It uses a file system (like a library catalog) to keep track of files. 
+When you save a photo or open a document, the OS knows exactly where on the disk to write or read it. 
+Hardware and device management: 
+The OS controls all hardware devices (keyboards, printers, monitors, etc.) and provides drivers so your programs can use them. In effect, the OS translates between software and hardware. 
+For example, if a program wants to print a page, the OS tells the printer what to do. You don’t have to control the printer directly.
+User interface: 
+The OS often provides an easy interface (like a graphical desktop with icons and menus) so you interact with the computer by clicking instead of typing commands. 
+This user-friendly layer means you don’t have to remember complex code – you just click “Open” or drag-and-drop files. The OS translates your clicks and keystrokes into actions.
+
+
+Linux Operating System
+Most production servers—and a huge share of cloud workloads, containers, and Kubernetes clusters—run on Linux.
+As aspiring DevOps engineers, Linux is your home turf. 
+Tux, the friendly penguin, is the mascot of Linux—one of the major families of operating systems.
+Most production servers—and a huge share of cloud workloads, containers, and Kubernetes clusters—run on Linux.
+If you can navigate Linux confidently, you can deploy faster, troubleshoot smarter, and automate more.
+
+Linux Distribution
+Linux is an open-source OS. That means its source code is public: anyone can view it, improve it, and share it. 
+There are many versions tailored for different needs, called distributions: Ubuntu, Fedora, Linux Mint, and more. Each bundles the Linux kernel with different tools and a unique look, but the core concepts remain the same.
+
+Linux Architecture
+
+User → Apps/Utilities → Shell → System Libraries → Kernel → Hardware
+HardwareThe physical devices that provides: CPU, RAM, storage, network card, etc. 
+It does nothing by itself—everything else tells it what to do.
+KernelIt schedules programs, manages memory, talks to devices (via drivers), handles filesystems, and enforces security. 
+System LibrariesAre like Prebuilt “lego blocks” apps use to ask the kernel for services (open files, use network, etc.). 
+Example: glibc. They save apps from reinventing the wheel.
+ShellYour command-line interface (e.g., bash, zsh). It reads your commands, runs programs, wires them together with pipes, and manages environments/scripts.
+Applications & UtilitiesEverything you run: editors (vim), servers (nginx), desktop apps, and everyday tools (ls, cp). Package managers (apt, dnf) help you install them.
+An Example Flow -
+Whenever you type a command, say ls → Shell starts ls → ls uses libraries → libraries call the kernel → kernel reads the disk (hardware) → results come back to your screen.
+
+
+Virtualisation
+One technology that has shaped the world of Infrastructure is Virtualisation. Virtualisation allows you to run multiple computers (VMs) on a single hardware
+
+Let us find what and how?
+
+
+Initially the software were deployed on the Physical servers (on-premise). It is like buying a physical machine with big size RAM, storage, etc.
+
+Most of the time these infrastructure were underutilized and it was also difficult to install multiple softwares on the same machine due to conflicting dependencies.
+
+Also since there’s no strong isolation between applications, so if one app consumes too much CPU or memory, others on the same server suffer.
+
+Organisations need a way to improve the resource utilization and Virtualisation was introduced.
+
+The introduction of virtualization solved many of the problems we discussed.
+
+A virtual machine (VM) is an emulation of a physical computer. 
+
+With a hypervisor (like VMware, VirtualBox, or Hyper-V), you can run multiple VMs on a single physical server. 
+
+
+
+Virtualisation
+Virtualization lets one computer or server act like multiple computers at the same time by creating virtual machines (VMs) on the same hardware. 
+Each VM behaves like its own computer with its own operating system and applications, even though they share the same underlying hardware.
+There are two types of Hypervisor - 
+> Hypervisor Type 1
+> Hypervisor Type 2
+
+Hypervisor Type 1
+The software that makes virtualization possible is called a hypervisor. 
+The hypervisor sits between the physical hardware and the virtual machines, managing resources like CPU and memory and ensuring each VM stays isolated. 
+There are two main kinds of hypervisors:
+Type 1 (Bare-Metal) Hypervisor: 
+This hypervisor runs directly on the physical hardware, without any other operating system underneath. 
+It acts as a specialized, lightweight operating system just for hosting VMs. Because it has direct access to hardware, Type 1 hypervisors offer high performance and strong security. 
+They are commonly used in data centers and cloud servers (for example, VMware ESXi or Microsoft Hyper-V).
+
+
+Hypervisor Type 2
+Type 2 (Hosted) Hypervisor: This hypervisor runs on top of an existing OS like any other application. 
+For instance, VirtualBox or VMware Workstation is installed on Windows, macOS, or Linux and then hosts VMs. 
+Type 2 hypervisors are easy to install and good for desktop or test environments, but they add some overhead because they go through the host OS.
+
+
+Linux CLI (Command Line Interface)
+
+How we connect to a Linux Machine?
+SSH is the protocol that can be used to connect to the virtual machine (hosted in the cloud or elsewhere)
+You need a terminal to connect to the VM.> Terminal (Mac, Linux)
+> Powershell or PuTTy (Windows)
+
+SSH 
+You need following information to connect to the VM via SSH
+> IP Address - Public or Private (If you are connecting from a virtual Network)
+> Username - Every virtual machine has users that can connect to the VM
+> Authentication Method: Password/SSH Key-Pair
+> Port: Usually 22
+
+SSH Command
+> ssh username@<IP_address>
+> ssh -i <private_key>@<IP_address>
+
+Lab 1 - Provision a Linux VM and connect via SSH
+
+Shell Prompt
+Once you connect to the Virtual Machine via SSH. It connects you to the shell PromptThe shell prompt is the text interface provided by the shell where users can type and execute commands
+
+Command Syntax
+command: The action to perform.
+options: Modify the behavior of the command (e.g., -l for long listing in ls).
+arguments: Additional inputs, such as file or directory names.
+
+
+ls – List files. Shows files/folders in the current directory.
+pwd – Print Working Directory. Tells you the full path of the folder you’re in.
+cd <folder> – Change Directory. Go into a sub-folder. For example, cd Documents moves into the “Documents” folder. (cd .. goes up one level.)
+mkdir <name> – Make Directory. Create a new folder. E.g. mkdir Projects makes a directory named “Projects”.
+Basic Linux Commands
+
+Basic Linux Commands
+rm <file> – Remove file. Deletes a file. Use carefully (it’s permanent). (Use rmdir <folder> to remove an empty folder.)
+cp <src> <dest> – Copy file. Copy a file (<src>) to a new location or name (<dest>).
+mv <src> <dest> – Move/Rename file. Move a file or rename it. (mv old.txt new.txt renames a file.)
+cat <file> – Concatenate/print file. Shows the contents of a text file on screen.
+clear – Clears the screen (so you get a clean prompt).
+man <command> – Shows the manual for any command (e.g. man ls gives help for ls).
+
+Lab 2 - Basic Navigation in Linux
+
+Linux Default Directory Structure
+In the last lab, we practiced a few linux commands to navigate around and you must have seen a lot of directories (folders) and files. 
+
+Let us find out how linux creates the default files and folder structures
+
+Linux stores everything in a single tree that starts at the top with the root directory /. 
+
+Every file and folder lives somewhere beneath /.
+
+Remember these paths!
+/bin – Core commands everyone needs (e.g., shells, basic tools).
+/sbin – Core system/admin commands.
+/usr/bin – Most user commands from installed packages.
+/usr/sbin – Additional system/admin tools.
+/usr/lib – Libraries used by programs in /usr.
+/usr/local/… – Your locally installed software (doesn’t overwrite system packages).
+/opt – Optional, third-party apps (often self-contained directories).
+These are some common paths that we want you to remember!
+
+
+
+Paths 101
+> Absolute path: starts from / (e.g., /etc/ssh/sshd_config).
+> Relative path: starts from where you are (e.g., Documents/report.txt).
+. (dot) means current directory; .. (double dot) means parent directory.
+~ (tild) means your home (e.g., /home/alex).
+> Case-sensitive: /Home and /home are different.
+
+
+Users and Groups
+& File Permissions
+Linux is a multi-user operating system—many people can be logged in at the same time, sometimes working with the same files and folders. That’s powerful, but it also creates risk: unauthorized access or accidental changes to important data.
+To keep things safe, Linux uses three building blocks: users, groups, and file permissions (read, write, execute). Together, they control who can do what with which files—so the right people have the right access, and everyone else doesn’t.
+
+
+Users and Groups
+> A user is an account that can log in and own files. Every user has a unique Id (called UID)
+> A Group (also has a unique ID, GID) is a collection of Users with some commonality, example all people from development team can be added to dev group, etc.
+
+Types of Users
+root — The all-access type of user. This user can go anywhere and do anything. Powerful, risky if misused.
+Regular users — People who log in to work (you, teammates). They have a home directory to work on and limited privileges.
+System/Service users — Special “non-human” accounts used by software (databases, web servers). They don’t log in like people; they exist so services can run safely with just the access they need.
+
+
+Managing Users
+Create a User:
+> sudo useradd username
+> sudo passwd username
+Delete a User:
+> sudo userdel username
+
+
+Managing Users
+Modify a User:
+
+> sudo usermod -aG groupname username  # Add a user to a group
+> sudo usermod -L username            # Lock a user account
+> sudo usermod -U username            # Unlock a user account
+View User Information:
+
+> whoami  # Shows the current user
+> id username  # Displays user ID (UID), group ID (GID), and groups
+
+
+File Permission
+Each file on a Linux system has an owner (a user) and an owner group associated with it.
+The owner is typically the user who created the file (though ownership can be changed), and the group is often a group of users who are allowed some access to that file.
+
+Note: The root user can always access or change any file, regardless of its permissions. This power is used for system administration tasks.
+
+Each file on a Linux system has an owner (a user) and an owner group associated with it.
+
+The owner is typically the user who created the file (though ownership can be changed), and the group is often a group of users who are allowed some access to that file.
+
+For example, if a file is owned by user Alice and group project, Alice is the file’s owner, and any user in the “project” group is considered part of that file’s group. Ownership matters because Linux permissions are defined separately for the file’s owner, the group, and everyone else.
+
+
+File Permission
+Linux defines three basic permission types for files and directories:
+Read (r)
+Write (w)
+Execute (x)
+If a permission is not granted, a hyphen (-) is shown in its place. 
+For example, if a file’s permission string for a given category is r-x, it means read and execute are allowed, but write is not (the middle slot is -).
+
+Linux defines three basic permission types for files and directories:
+Read (r): Permission to read or view the file’s contents. For a directory, read permission allows listing the files inside (viewing the filenames in that directory).
+Write (w): Permission to modify or delete the file. For a directory, write permission allows creating, renaming, or deleting files within it (i.e. modifying the directory’s contents).
+Execute (x): Permission to run the file as a program (if it’s a script or binary program). For a directory, execute permission allows entering that directory (using cd) and accessing its contents and metadata.
+If a permission is not granted, a hyphen (-) is shown in its place. For example, if a file’s permission string for a given category is r-x, it means read and execute are allowed, but write is not (the middle slot is -).
+
+In numeric mode, permissions are represented by a three-digit code (corresponding to owner, group, and others). 
+Each permission is assigned a value: read = 4, write = 2, execute = 1. These values are added up for each category.
+
+Example:
+> chmod 644 report.txt
+For example, the code 755 means the owner has 7 (4+2+1, i.e. rwx), while the group and others have 5 (4+1, i.e. r-x).
+
+
+Changing Permission with chmod
+
+In symbolic mode, you use letters to specify changes: 
+u (owner/user), g (group), o (others), and a (all), combined with + (add), - (remove), or = (set exact permissions).
+For instance, suppose a file is currently -rw-r--r-- (owner can read/write, others can only read). If you want to make it executable for the owner, you can use:
+
+> chmod u+x report.txt
+Changing Permission with chmod
+
+The chown command (short for “change owner”) is used to change the ownership of a file or directory. 
+This means you can change which user is the file’s owner, and optionally which group the file belongs to. 
+Only the superuser (root) or a user with appropriate administrative privileges (using sudo) can use chown to reassign file ownership. 
+The basic usage is:
+chown new_owner:new_group filename
+
+
+Changing File Permissions with chown
+
+For example, if report.txt is currently owned by Alice and you want to transfer it to user bob and also change its group to developers, you would run:
+> sudo chown bob:developers report.txt
+
+Changing File Permissions with chown
+
+Sudo
+sudo lets a trusted user temporarily act with elevated powers to perform a specific task (like installing software) without logging in as root full-time.
+
+Lab - Practicing File Permissions
+In the last lab, we practiced a few linux commands to navigate around and you must have seen a lot of directories (folders) and files. 
+
+Let us find out how linux creates the default files and folder structures
+
+Thank You!

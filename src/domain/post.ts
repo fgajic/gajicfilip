@@ -22,5 +22,6 @@ export type PostSearchModel = {
 
 export enum PostType {
     Blog,
-    Guide
+    Guide,
+    Lab
 }

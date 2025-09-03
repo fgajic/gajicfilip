@@ -1,0 +1,401 @@
+System Administration Fundamentals
+Learning Objective
+By the end of this lab, you will be able to:
+- Monitor system resources (CPU, memory, disk usage)
+- Use package managers to install, update, and remove software
+- Monitor and manage running processes
+- Understand system services and how to check their status
+- Perform basic network diagnostics
+- Prepare for web server installation and configuration
+
+Pre-Requisite
+- Completed Lab 1 (Basic Navigation) and Lab 2 (File Permissions)
+- A Linux system with internet access (local VM, WSL, or remote VM)
+- Basic terminal comfort with commands like ls, cd, pwd
+- sudo privileges (for package management and service operations)
+
+Tip: This lab builds on your navigation and permissions knowledge while introducing system administration concepts that prepare you for web server management.
+
+Steps to Follow
+
+Part A — System Information and Resource Monitoring (20 min)
+
+1) Check your system details:
+```bash
+uname -a
+cat /etc/os-release
+whoami
+id
+```
+
+2) Monitor system resources:
+```bash
+# Check memory usage
+free -h
+
+# Check disk usage
+df -h
+
+# Check disk usage of current directory
+du -sh ~
+
+# Check CPU and system load
+uptime
+```
+
+3) Create a system report:
+```bash
+mkdir -p ~/sys-admin-lab
+cd ~/sys-admin-lab
+
+# Create a system info file
+cat > system-info.txt << 'EOF'
+=== System Information ===
+OS: $(cat /etc/os-release | grep PRETTY_NAME)
+Kernel: $(uname -r)
+Architecture: $(uname -m)
+Current User: $(whoami)
+Home Directory: $HOME
+EOF
+
+# Make it executable and run it
+chmod +x system-info.txt
+bash system-info.txt > system-report.txt
+cat system-report.txt
+```
+
+Checkpoint: You have a system report showing your OS, kernel, and user information.
+
+Deliverable: Paste the output of `free -h` and `df -h` in your notes.
+
+Part B — Package Management Fundamentals (25 min)
+
+1) Identify your package manager:
+```bash
+# Check which package manager is available
+which apt yum dnf pacman zypper 2>/dev/null || echo "Package manager not found"
+
+# For Ubuntu/Debian systems, update package lists
+sudo apt update
+
+# For CentOS/RHEL/Fedora systems (uncomment if applicable)
+# sudo yum update  # or sudo dnf update
+```
+
+2) Search for and install a useful tool:
+```bash
+# Search for htop (an advanced process monitor)
+apt search htop 2>/dev/null || yum search htop 2>/dev/null || dnf search htop 2>/dev/null
+
+# Install htop
+sudo apt install htop -y 2>/dev/null || sudo yum install htop -y 2>/dev/null || sudo dnf install htop -y 2>/dev/null
+
+# Verify installation
+which htop
+htop --version
+```
+
+3) Install additional useful tools:
+```bash
+# Install curl (if not already installed)
+sudo apt install curl wget tree -y 2>/dev/null || sudo yum install curl wget tree -y 2>/dev/null || sudo dnf install curl wget tree -y 2>/dev/null
+
+# Verify installations
+curl --version | head -1
+wget --version | head -1
+tree --version
+```
+
+4) Practice package management:
+```bash
+# List installed packages (show first 10)
+dpkg -l | head -10 2>/dev/null || rpm -qa | head -10 2>/dev/null
+
+# Check if a specific package is installed
+dpkg -l | grep htop 2>/dev/null || rpm -qa | grep htop 2>/dev/null
+```
+
+Checkpoint: You have htop, curl, wget, and tree installed and can verify their versions.
+
+Deliverable: Show the output of `htop --version` and list 3 packages you found interesting from the package list.
+
+Part C — Process Monitoring and Management (25 min)
+
+1) Explore running processes:
+```bash
+# List all processes (first 10 lines)
+ps aux | head -10
+
+# List processes in a tree format
+ps auxf | head -20
+
+# Show processes for current user only
+ps ux
+```
+
+2) Use htop for interactive monitoring:
+```bash
+# Start htop (press q to quit when done exploring)
+htop
+```
+
+3) Monitor specific processes:
+```bash
+# Find processes by name
+ps aux | grep -E "(bash|ssh|systemd)"
+
+# Monitor processes in real-time (Ctrl+C to stop)
+top -n 5
+
+# Show process tree
+pstree | head -20
+```
+
+4) Practice job control:
+```bash
+# Start a long-running process in background
+sleep 300 &
+
+# List background jobs
+jobs
+
+# Bring job to foreground
+fg %1
+
+# Stop it with Ctrl+C, then start another in background
+sleep 200 &
+
+# Kill the background job
+kill %1
+jobs
+```
+
+Checkpoint: You can list processes, use htop, and manage background jobs.
+
+Deliverable: Show the output of `ps aux | grep bash` and explain what the columns mean.
+
+Part D — System Services and Service Management (20 min)
+
+1) Check system services:
+```bash
+# List all services (systemd systems)
+systemctl list-units --type=service | head -10
+
+# Check status of common services
+systemctl status ssh 2>/dev/null || systemctl status sshd 2>/dev/null
+systemctl status networking 2>/dev/null || systemctl status NetworkManager 2>/dev/null
+```
+
+2) Understand service states:
+```bash
+# Show service states with descriptions
+systemctl list-units --type=service --state=running | head -5
+systemctl list-units --type=service --state=active | head -5
+```
+
+3) Check if web server services are available:
+```bash
+# Check if Apache is installed
+which apache2 2>/dev/null || which httpd 2>/dev/null || echo "Apache not installed"
+
+# Check if Nginx is installed
+which nginx 2>/dev/null || echo "Nginx not installed"
+
+# List available web server packages
+apt search apache2 2>/dev/null | head -5 || yum search httpd 2>/dev/null | head -5
+```
+
+4) Create a service monitoring script:
+```bash
+cat > check-services.sh << 'EOF'
+#!/bin/bash
+echo "=== Service Status Check ==="
+echo "SSH Service:"
+systemctl is-active ssh 2>/dev/null || systemctl is-active sshd 2>/dev/null || echo "SSH service not found"
+echo "Network Service:"
+systemctl is-active networking 2>/dev/null || systemctl is-active NetworkManager 2>/dev/null || echo "Network service not found"
+echo "System Time:"
+date
+EOF
+
+chmod +x check-services.sh
+./check-services.sh
+```
+
+Checkpoint: You can check service status and understand basic service management.
+
+Deliverable: Show the output of your `check-services.sh` script.
+
+Part E — Basic Network Diagnostics (15 min)
+
+1) Check network configuration:
+```bash
+# Show network interfaces
+ip addr show | head -20
+
+# Show routing table
+ip route show
+
+# Check network connectivity
+ping -c 3 8.8.8.8
+```
+
+2) Test DNS resolution:
+```bash
+# Test DNS with nslookup or dig
+nslookup google.com 2>/dev/null || dig google.com 2>/dev/null || echo "DNS tools not available"
+
+# Check if you can resolve common domains
+host google.com 2>/dev/null || echo "host command not available"
+```
+
+3) Check listening ports:
+```bash
+# Show listening ports
+ss -tlnp | head -10 2>/dev/null || netstat -tlnp | head -10 2>/dev/null
+
+# Check if SSH is listening
+ss -tlnp | grep :22 2>/dev/null || netstat -tlnp | grep :22 2>/dev/null
+```
+
+4) Create a network diagnostic report:
+```bash
+cat > network-check.sh << 'EOF'
+#!/bin/bash
+echo "=== Network Diagnostic Report ==="
+echo "Date: $(date)"
+echo ""
+echo "Network Interfaces:"
+ip addr show | grep -E "(inet |UP|DOWN)"
+echo ""
+echo "Default Gateway:"
+ip route | grep default
+echo ""
+echo "DNS Servers:"
+cat /etc/resolv.conf | grep nameserver
+echo ""
+echo "Internet Connectivity:"
+ping -c 2 8.8.8.8 > /dev/null 2>&1 && echo "✓ Internet accessible" || echo "✗ No internet access"
+EOF
+
+chmod +x network-check.sh
+./network-check.sh
+```
+
+Checkpoint: You can check network configuration and test connectivity.
+
+Deliverable: Show the output of your `network-check.sh` script.
+
+Part F — Preparation for Web Server Lab (15 min)
+
+1) Create a web directory structure:
+```bash
+# Create web server directory structure
+sudo mkdir -p /var/www/html
+sudo chown -R $USER:$USER /var/www/html 2>/dev/null || sudo chown -R $USER /var/www/html
+
+# Create a simple test page
+cat > /var/www/html/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Hello from Linux Lab!</h1>
+    <p>This is a test page for tomorrow's Apache lab.</p>
+    <p>Current time: <script>document.write(new Date());</script></p>
+</body>
+</html>
+EOF
+
+# Set appropriate permissions
+chmod 644 /var/www/html/index.html
+ls -la /var/www/html/
+```
+
+2) Test the HTML file:
+```bash
+# View the HTML file
+cat /var/www/html/index.html
+
+# Check file permissions
+ls -la /var/www/html/index.html
+```
+
+3) Create a lab summary:
+```bash
+cat > lab3-summary.txt << 'EOF'
+=== Lab 3 Summary ===
+Date: $(date)
+User: $(whoami)
+System: $(uname -a)
+
+Tools Installed:
+- htop: $(which htop)
+- curl: $(which curl)
+- wget: $(which wget)
+- tree: $(which tree)
+
+Key Commands Learned:
+- System monitoring: free, df, uptime, ps, htop
+- Package management: apt/yum install, search
+- Process management: jobs, fg, bg, kill
+- Service management: systemctl status
+- Network diagnostics: ip, ping, ss/netstat
+
+Web Server Preparation:
+- Created /var/www/html directory
+- Created test index.html file
+- Ready for Apache installation tomorrow
+EOF
+
+cat lab3-summary.txt
+```
+
+4) Clean up (optional):
+```bash
+# Remove the lab directory if desired
+# cd ~
+# rm -rf ~/sys-admin-lab
+```
+
+Checkpoint: You have a test HTML page ready and understand system administration basics.
+
+Deliverable: Show the contents of your `index.html` file and the final `lab3-summary.txt`.
+
+Submission Checklist
+- System resource outputs (free -h, df -h)
+- Package installation confirmations
+- Process monitoring examples
+- Service status checks
+- Network diagnostic results
+- Web directory structure and test HTML file
+- Lab summary document
+
+Grading Rubric
+- System monitoring and resource checks (20%)
+- Package management operations (20%)
+- Process monitoring and job control (20%)
+- Service management understanding (15%)
+- Network diagnostics (15%)
+- Web server preparation (10%)
+
+Next Steps
+Tomorrow you'll use this foundation to:
+- Install and configure Apache web server
+- Host your HTML page
+- Understand web server configuration files
+- Test web server functionality
+
+Safety Notes
+- All commands in this lab are safe and don't modify critical system files
+- The web directory creation uses standard locations
+- Always use sudo carefully and understand what commands do
+- Use Ctrl+C to stop running processes if needed
+
+Tips for Success
+- Take notes on commands that are new to you
+- Practice the process monitoring commands - they're essential for troubleshooting
+- Understand the difference between system services and user processes
+- The network diagnostics will help you troubleshoot connectivity issues later

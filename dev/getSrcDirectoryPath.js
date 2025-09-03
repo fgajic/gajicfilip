@@ -3,6 +3,7 @@ import fs from "fs";
 
 export const blogDir = path.join(postsDir(), "blog");
 export const guidesDir = path.join(postsDir(), "guides");
+export const labsDir = path.join(postsDir(), "labs");
 
 export function postsDir() {
     return path.join(getSrcDirectoryPath(process.cwd()), "posts");
