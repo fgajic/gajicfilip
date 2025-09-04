@@ -38,14 +38,14 @@ sudo chown -R www-data:www-data /var/www/site1 /var/www/app
 sudo chmod -R 755 /var/www/site1 /var/www/app
 
 # Create HTML files using nano
-nano /var/www/site1/index.html
+sudo nano /var/www/site1/index.html
 # Add this content:
 <!DOCTYPE html>
 <html><head><title>site1</title></head>
 <body><h1>site1.local</h1><p>Static site served by Nginx</p></body></html>
 # Save with Ctrl+X, then Y, then Enter
 
-nano /var/www/app/index.html
+sudo nano /var/www/app/index.html
 # Add this content:
 <!DOCTYPE html>
 <html><head><title>app</title></head>
@@ -139,23 +139,12 @@ Part B — SSH Hardening
 
 **What you'll learn:** SSH (Secure Shell) is how you connect to remote servers. By default, SSH allows password logins and root access, which are security risks. We'll harden SSH by using key-based authentication, changing the default port, and disabling dangerous features.
 
-1) Ensure a non-root sudo user and SSH key auth:
-
-**Explanation:** SSH keys are more secure than passwords because they use cryptography instead of text that can be guessed or stolen. We'll generate a key pair (public and private) and use the public key to authenticate.
-```bash
-id $USER
-mkdir -p ~/.ssh && chmod 700 ~/.ssh
-test -f ~/.ssh/id_ed25519 || ssh-keygen -t ed25519 -C "$USER@$(hostname)" -N "" -f ~/.ssh/id_ed25519
-cat ~/.ssh/id_ed25519.pub | sudo tee -a /home/$USER/.ssh/authorized_keys >/dev/null
-sudo chmod 600 /home/$USER/.ssh/authorized_keys
-```
-
 2) Safely change SSH settings:
 
 **Explanation:** We're modifying SSH configuration to make it more secure. We change the port from 22 to 2222 (security through obscurity), disable root login (use sudo instead), and disable password authentication (keys only). We backup the config first in case something goes wrong.
 ```bash
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%s)
-sudo sed -i 's/^#\?Port .*/Port 2222/' /etc/ssh/sshd_config
+sudo sed -i '/^Port 2222/a Port 22' /etc/ssh/sshd_config
 sudo sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
 sudo sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
 echo "AllowUsers $USER" | sudo tee -a /etc/ssh/sshd_config >/dev/null
@@ -164,7 +153,8 @@ sudo systemctl reload ssh || sudo systemctl reload sshd
 
 3) Test in a new terminal without closing the current session:
 ```bash
-ssh -p 2222 $USER@$(hostname -I | awk '{print $1}') true && echo "✓ SSH hardened works" || echo "✗ SSH test failed"
+ssh -p 2222 -i <priv_key.pem> <username>@<your_public_IP_addr>
+# It fails, try to figure out why 🤔
 ```
 
 Checkpoint: Root and password logins disabled, key-only auth on custom port works.
@@ -176,7 +166,7 @@ Part C — Firewall and Fail2Ban
 
 1) Configure firewall (UFW example):
 
-**Explanation:** UFW (Uncomplicated Firewall) is a user-friendly interface for managing firewall rules. We'll deny all incoming traffic by default, then explicitly allow only the ports we need (SSH on 2222 and Nginx on 80/443). The 'Nginx Full' profile allows both HTTP (80) and HTTPS (443) traffic. Notice we don't need to open port 3000 for our backend service - Nginx will proxy requests to it internally, keeping the backend hidden from external access.
+**Explanation:** UFW (Uncomplicated Firewall) is a user-friendly interface for managing firewall rules. We'll deny all incoming traffic by default, then explicitly allow only the ports we need (SSH on 2222 and Nginx on 80/443). The 'Nginx Full' profile allows both HTTP (80) and HTTPS (443) traffic. Notice we don't need to open port 3003 for our backend service - Nginx will proxy requests to it internally, keeping the backend hidden from external access.
 ```bash
 sudo apt install ufw -y
 sudo ufw default deny incoming
@@ -195,7 +185,9 @@ sudo ufw app list | cat
 **Explanation:** Fail2Ban reads log files and automatically bans IP addresses that show malicious behavior. We configure it to monitor SSH login attempts and Nginx access logs, then temporarily block IPs that fail too many times.
 ```bash
 sudo apt install fail2ban -y
-sudo bash -c 'cat > /etc/fail2ban/jail.local << "EOF"'
+sudo nano /etc/fail2ban/jail.local
+# Add following lines:
+
 [DEFAULT]
 bantime = 10m
 findtime = 10m
@@ -210,7 +202,8 @@ enabled = true
 
 [nginx-limit-req]
 enabled = true
-EOF
+
+# Save with Ctrl+X, then Y, then Enter
 
 sudo systemctl enable --now fail2ban
 sudo fail2ban-client status | cat
@@ -230,21 +223,14 @@ Part D — Service Minimization and Nginx Hardening
 
 **What you'll learn:** Every running service is a potential security risk. We'll disable unnecessary services and harden Nginx by hiding version information, adding security headers, and enabling performance optimizations.
 
-1) Disable unnecessary services (examples):
 
-**Explanation:** Each running service uses system resources and could potentially be exploited. We'll identify and disable services that aren't needed for our web server, reducing the "attack surface" of our system.
-```bash
-systemctl list-unit-files --type=service | grep enabled | head -20
-# Decide and disable non-required services, e.g.:
-# sudo systemctl disable --now avahi-daemon
-# sudo systemctl disable --now cups
-```
-
-2) Nginx hardening:
+1) Nginx hardening:
 
 **Explanation:** We'll add security headers that tell browsers how to handle our content safely, hide Nginx version information (so attackers can't target specific vulnerabilities), and enable compression to make our site faster.
 ```bash
-sudo bash -c 'cat > /etc/nginx/conf.d/security.conf << "EOF"'
+# Open the file with nano
+sudo nano /etc/nginx/conf.d/security.conf
+
 # Hide Nginx version
 server_tokens off;
 
@@ -254,38 +240,14 @@ add_header X-Content-Type-Options "nosniff" always;
 add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "no-referrer-when-downgrade" always;
 
-# Disable server signature
-more_clear_headers Server;
-EOF
+# Save with Ctrl+X, then Y, then Enter
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-3) Add caching and compression:
-
-**Explanation:** Compression reduces file sizes (making pages load faster), and caching tells browsers to store static files locally instead of downloading them repeatedly. This improves performance and reduces server load.
+2) Verify configuration and permissions:
 ```bash
-sudo bash -c 'cat >> /etc/nginx/sites-available/site1.conf << "EOF"'
-
-    # Enable gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-    # Cache static assets
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-EOF
-
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-4) Verify configuration and permissions:
-```bash
-nginx -T | grep -E "(server_tokens|add_header)" | head -10
+sudo nginx -T | grep -E "(server_tokens|add_header)" | head -10
 ls -la /var/www/site1 /var/www/app | cat
 ```
 
@@ -326,17 +288,17 @@ Deliverable: rotated log listing and three analysis files.
 
 Part F — Reverse Proxy and Backend Integration
 
-**What you'll learn:** A reverse proxy sits between clients and backend services, forwarding requests and responses. This is how modern web applications work - Nginx serves static files and forwards dynamic requests to application servers. This is also a key security benefit: you only need to expose ports 22, 80, and 443 to the internet, while backend services can run on internal ports (like 3000, 8000, etc.) that are never directly accessible from outside.
+**What you'll learn:** A reverse proxy sits between clients and backend services, forwarding requests and responses. This is how modern web applications work - Nginx serves static files and forwards dynamic requests to application servers. This is also a key security benefit: you only need to expose ports 22, 80, and 443 to the internet, while backend services can run on internal ports (like 3003, 8000, etc.) that are never directly accessible from outside.
 
 1) Create a simple backend service:
 
-**Explanation:** We'll create a simple Node.js web server that runs on port 3000. This simulates a real application server that handles dynamic content (like user accounts, databases, etc.) while Nginx handles static files.
+**Explanation:** We'll create a simple Node.js web server that runs on port 3003. This simulates a real application server that handles dynamic content (like user accounts, databases, etc.) while Nginx handles static files.
 ```bash
 sudo apt install nodejs npm -y
 mkdir -p ~/backend-app
 cat > ~/backend-app/server.js << 'EOF'
 const http = require('http');
-const port = 3000;
+const port = 3002;
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, {'Content-Type': 'application/json'});
@@ -354,18 +316,21 @@ EOF
 
 cd ~/backend-app
 npm init -y
-node server.js &
+nohup node server.js > server.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend PID: $BACKEND_PID"
 ```
 
 2) Configure Nginx reverse proxy:
 
-**Explanation:** We'll configure Nginx to act as a reverse proxy. When someone visits `api.local`, Nginx will forward their request to our Node.js server running on port 3000, then send the response back to the client. This hides the backend server from direct access. Notice how port 3000 is never exposed to the internet - only Nginx (port 80) is accessible, and it internally forwards requests to the backend.
+**Explanation:** We'll configure Nginx to act as a reverse proxy. When someone visits `api.local`, Nginx will forward their request to our Node.js server running on port 3003, then send the response back to the client. This hides the backend server from direct access. Notice how port 3003 is never exposed to the internet - only Nginx (port 80) is accessible, and it internally forwards requests to the backend.
 ```bash
-sudo bash -c 'cat > /etc/nginx/sites-available/api.conf << "EOF"'
+sudo nano /etc/nginx/sites-available/api.conf
+
+# Add following lines:
+
 upstream backend {
-    server 127.0.0.1:3000;
+    server 127.0.0.1:3002;
 }
 
 server {
@@ -383,7 +348,8 @@ server {
     access_log /var/log/nginx/api.access.log;
     error_log /var/log/nginx/api.error.log;
 }
-EOF
+
+# Save with Ctrl+X, then Y, then Enter
 
 sudo ln -sf /etc/nginx/sites-available/api.conf /etc/nginx/sites-enabled/
 echo "$(hostname -I | awk '{print $1}') api.local" | sudo tee -a /etc/hosts
@@ -400,10 +366,10 @@ curl http://api.local/test | jq . || curl http://api.local/test
 
 **Explanation:** Let's create another backend service on a different port to show how Nginx can act as a gateway to multiple internal services. This is common in microservices architectures where you have many small services running on different ports, but only expose Nginx to the internet.
 ```bash
-# Create a second backend service on port 3001
+# Create a second backend service on port 3003
 cat > ~/backend-app/server2.js << 'EOF'
 const http = require('http');
-const port = 3001;
+const port = 3003;
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, {'Content-Type': 'application/json'});
@@ -420,14 +386,16 @@ server.listen(port, '127.0.0.1', () => {
 });
 EOF
 
-node ~/backend-app/server2.js &
+nohup node server2.js > server2.log 2>&1 &
 BACKEND2_PID=$!
 echo "Backend 2 PID: $BACKEND2_PID"
 
 # Create Nginx config for the second service
-sudo bash -c 'cat > /etc/nginx/sites-available/service2.conf << "EOF"'
+sudo nano /etc/nginx/sites-available/service2.conf
+
+# Add following lines
 upstream backend2 {
-    server 127.0.0.1:3001;
+    server 127.0.0.1:3003;
 }
 
 server {
@@ -445,20 +413,20 @@ server {
     access_log /var/log/nginx/service2.access.log;
     error_log /var/log/nginx/service2.error.log;
 }
-EOF
+# Save with Ctrl+X, then Y, then Enter
 
 sudo ln -sf /etc/nginx/sites-available/service2.conf /etc/nginx/sites-enabled/
 echo "$(hostname -I | awk '{print $1}') service2.local" | sudo tee -a /etc/hosts
 sudo nginx -t && sudo systemctl reload nginx
 
 # Test both services
-echo "Testing api.local (port 3000):"
+echo "Testing api.local (port 3002):"
 curl http://api.local/ | jq . || curl http://api.local/
-echo "Testing service2.local (port 3001):"
+echo "Testing service2.local (port 3003):"
 curl http://service2.local/ | jq . || curl http://service2.local/
 
-# Show that ports 3000 and 3001 are not accessible from outside
-echo "Ports 3000 and 3001 are not accessible externally - only through Nginx!"
+# Show that ports 3002 and 3003 are not accessible from outside
+echo "Ports 3002 and 3003 are not accessible externally - only through Nginx!"
 ```
 
 Checkpoint: Nginx successfully proxies requests to multiple backend services, demonstrating the gateway concept.
@@ -549,10 +517,10 @@ Part H — Health Checks and Backend Monitoring
 **Explanation:** We'll modify our backend services to include health check endpoints that return the service status. This allows Nginx to monitor if the backends are healthy.
 ```bash
 # Update the first backend service with health checks
-nano ~/backend-app/server.js
-# Replace the entire content with:
+rm ~/backend-app/server.js && nano ~/backend-app/server.js
+# Add following:
 const http = require('http');
-const port = 3000;
+const port = 3002;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/health') {
@@ -579,10 +547,10 @@ server.listen(port, '127.0.0.1', () => {
 # Save with Ctrl+X, then Y, then Enter
 
 # Update the second backend service with health checks
-nano ~/backend-app/server2.js
-# Replace the entire content with:
+rm ~/backend-app/server2.js && nano ~/backend-app/server2.js
+# Add following:
 const http = require('http');
-const port = 3001;
+const port = 3003;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/health') {
@@ -612,9 +580,9 @@ server.listen(port, '127.0.0.1', () => {
 # Restart backend services
 kill $BACKEND_PID 2>/dev/null || true
 kill $BACKEND2_PID 2>/dev/null || true
-node ~/backend-app/server.js &
+nohup node server.js > server.log 2>&1 &
 BACKEND_PID=$!
-node ~/backend-app/server2.js &
+nohup node server2.js > server2.log 2>&1 &
 BACKEND2_PID=$!
 echo "Backend services restarted with health checks"
 ```
@@ -627,7 +595,7 @@ echo "Backend services restarted with health checks"
 sudo nano /etc/nginx/sites-available/api.conf
 # Replace the entire content with:
 upstream backend {
-    server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
+    server 127.0.0.1:3002 max_fails=3 fail_timeout=30s;
     server 127.0.0.1:3001 max_fails=3 fail_timeout=30s backup;
 }
 
@@ -690,7 +658,7 @@ curl http://api.local/ | jq . || curl http://api.local/
 echo
 
 # Restart the first backend
-node ~/backend-app/server.js &
+nohup node server.js > server.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend 1 restarted"
 ```
@@ -770,7 +738,7 @@ Submission Checklist
 - Nginx hardening configs and security headers
 - Log rotation proof + log analysis outputs
 - Reverse proxy configs for multiple backend services
-- Demonstration that backend ports (3000, 3001) are not externally accessible
+- Demonstration that backend ports (3002, 3003) are not externally accessible
 - Rate limiting configuration and test results (503 errors)
 - Health check endpoints and failover demonstration
 - Deployment log + /backup artifact list
