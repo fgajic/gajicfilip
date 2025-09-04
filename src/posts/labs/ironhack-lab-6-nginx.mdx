@@ -112,9 +112,18 @@ sudo nginx -t && sudo systemctl reload nginx
 **Explanation:** Since we don't have real domains, we need to tell our system (and your workstation) that `site1.local` and `app.local` should point to our VM's IP address. The `/etc/hosts` file is like a local phone book that maps domain names to IP addresses.
 ```bash
 VM_IP=$(hostname -I | awk '{print $1}')
+HOSTS_FILE="/etc/hosts"
 echo "VM_IP is: $VM_IP"
 echo "Add these lines to /etc/hosts on your VM and your workstation:" 
-echo "$VM_IP site1.local app.local"
+echo "$VM_IP site1.local app.local"  
+
+# Add all lab hostnames to /etc/hosts
+for host in site1.local app.local api.local service2.local; do
+  if ! grep -q "$host" $HOSTS_FILE; then
+    echo "$VM_IP $host" | sudo tee -a $HOSTS_FILE >/dev/null
+  fi
+done
+
 ```
 
 4) Verify:
