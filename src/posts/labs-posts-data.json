@@ -1,5 +1,6 @@
 [
     {"fontMatter":{"title":"Ironhack Lab 6 - Nginx","teaser":"Secure Web Hosting and System Hardening with Nginx","date":"04.09.2025."},"id":"ironhack-lab-6-nginx"},
     {"fontMatter":{"title":"Ironhack Lab 5","teaser":"Let's learn Linux","date":"03.09.2025."},"id":"ironhack-lab-5"}
+    ,{"fontMatter":{"title":"Ironhack Lab 7 - Shell Scripting Ops Toolkit","teaser":"Real-world automation for files, processes, backups, logs, and scheduling","date":"07.09.2025."},"id":"ironhack-lab-7-shell-scripting"}
 ]
 

@@ -1,0 +1,340 @@
+---
+title: Ironhack Lab 7 - Shell Scripting Ops Toolkit
+teaser: Real-world automation for files, processes, backups, logs, and scheduling
+date: "07.09.2025."
+---
+
+Real-World Shell Scripting: Ops Toolkit in One Day
+
+Learning Objective
+By the end of this lab, you will be able to:
+- Write robust shell scripts with safety flags and helpful usage output
+- Automate file management: find, archive, rotate, and clean
+- Monitor and act on processes and resource usage
+- Create reliable, timestamped backups with verification and retention
+- Parse and summarize logs to surface actionable insights
+- Schedule jobs using cron (and optionally systemd timers)
+
+Pre-Requisite
+- Completed previous labs
+- Linux system with sudo privileges (VM/WSL/remote)
+- Basic familiarity with the terminal
+
+Submission Format
+- Upload your scripts and generated output files to your repo:
+  - scripts: `fm_tool.sh`, `proc_watch.sh`, `backup.sh`, `log_parse.sh`
+  - outputs: anything created in `~/lab7-outputs/`
+  - a short `README.md` describing how to run and what you observed
+
+Steps to Follow
+
+Part A — Project Scaffolding and Conventions
+
+What you'll learn: Professional scripts follow conventions: set safety flags, usage/help, logging, exit codes, and parameterization. You will scaffold a working directory and common helpers you can reuse.
+
+1) Create workspace and helpers:
+```bash
+set -euo pipefail
+mkdir -p "$HOME/lab7/scripts" "$HOME/lab7-outputs" "$HOME/lab7/tmp"
+nano "$HOME/lab7/scripts/common.sh"
+# Add this content:
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOG_DIR=${LOG_DIR:-"$HOME/lab7-outputs"}
+mkdir -p "$LOG_DIR"
+
+log() { echo "[$(date +%F_%T)] $*" | tee -a "$LOG_DIR/lab7.log"; }
+die() { echo "ERROR: $*" >&2; exit 1; }
+require() { command -v "$1" >/dev/null 2>&1 || die "Missing dependency: $1"; }
+# Save with Ctrl+X, then Y, then Enter
+chmod +x "$HOME/lab7/scripts/common.sh"
+```
+
+Checkpoint: Working folders created; `common.sh` exists.
+```bash
+# Source and test logging
+source ~/lab7/scripts/common.sh
+log "common.sh initialized from $(whoami)"
+```
+
+Deliverable: `lab7/scripts/common.sh` and `lab7-outputs/lab7.log` present.
+
+Part B — File Management with Shell Scripting (Mandatory)
+
+What you'll learn: Find and act on files by age/size/pattern, compress/rotate, and enforce retention (real ops tasks).
+
+1) Implement `fm_tool.sh` (use nano; do not paste from the internet):
+```bash
+nano "$HOME/lab7/scripts/fm_tool.sh"
+# Starter skeleton (add this, then complete the TODOs):
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/common.sh"
+
+usage() {
+  cat << USAGE
+Usage: $(basename "$0") --dir DIR [--pattern PAT] [--older-than DAYS] [--archive] [--delete] [--dry-run] [--retention N]
+USAGE
+}
+
+DIR=""; PATTERN="*"; OLDER_DAYS=0; DO_ARCHIVE=false; DO_DELETE=false; DRY=false; RETENTION=0
+# TODO: parse arguments as specified in usage
+
+# TODO: validate inputs; require commands: find, tar
+# TODO: find matching files and store into FILES array
+# TODO: when --archive set, create $LOG_DIR/archive-<stamp>.tgz of matched files
+# TODO: when --delete set, delete matched files (support --dry-run)
+# TODO: when --retention N set, keep only N newest archive-*.tgz in $LOG_DIR
+# Save with Ctrl+X, then Y, then Enter
+chmod +x "$HOME/lab7/scripts/fm_tool.sh"
+```
+
+2) Try it out:
+```bash
+mkdir -p "$HOME/lab7/demo"
+for i in {1..5}; do echo "log $i" > "$HOME/lab7/demo/app-$i.log"; done
+sleep 1
+"$HOME/lab7/scripts/fm_tool.sh" --dir "$HOME/lab7/demo" --pattern '*.log' --older-than 0 --archive --retention 3
+```
+
+Checkpoint: Archive created and retention applied.
+Deliverable: `lab7-outputs/archive-*.tgz` and log lines in `lab7-outputs/lab7.log`.
+
+Part C — Process Monitoring with Shell Scripting (Mandatory)
+
+What you'll learn: Watch processes, CPU/RAM usage, and optionally restart or alert.
+
+1) Implement `proc_watch.sh` (use nano; partial guidance):
+```bash
+nano "$HOME/lab7/scripts/proc_watch.sh"
+# Starter skeleton (complete the TODOs):
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/common.sh"
+usage(){ echo "Usage: $(basename "$0") --name PATTERN [--interval SEC] [--cpu-limit PCT] [--mem-limit MB] [--action {log,kill}] [--samples N]"; }
+PATTERN=""; INTERVAL=5; CPU_LIMIT=90; MEM_LIMIT=1024; ACTION=log; SAMPLES=12
+# TODO: parse args; validate --name
+require ps; require awk
+# TODO: loop SAMPLES times, grep processes matching PATTERN (exclude grep)
+# TODO: compute CPU and RSS_MB; log lines
+# TODO: if thresholds exceeded and ACTION=kill, kill -9 PID
+# Save with Ctrl+X, then Y, then Enter
+chmod +x "$HOME/lab7/scripts/proc_watch.sh"
+```
+
+2) Try it out (example: watch `sleep`):
+```bash
+(sleep 120 &) ; "$HOME/lab7/scripts/proc_watch.sh" --name 'sleep\b' --samples 3 --interval 1
+```
+
+Checkpoint: Process info logged; optional kill action works.
+Deliverable: Relevant `lab7-outputs/lab7.log` lines.
+
+Part D — Backup Files & Folders (Extra)
+
+What you'll learn: Composable backup script with timestamping, verification, retention, and exclusion.
+
+1) Implement `backup.sh` (use nano; student completes features):
+```bash
+nano "$HOME/lab7/scripts/backup.sh"
+# Starter skeleton (complete the TODOs):
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/common.sh"
+usage(){ echo "Usage: $(basename "$0") --source DIR --dest DIR [--name NAME] [--exclude PATTERN] [--retention N]"; }
+SRC=""; DEST=""; NAME="backup"; EXCLUDE=""; RET=7
+# TODO: parse args; validate SRC exists; ensure DEST
+STAMP=$(date +%Y%m%d-%H%M%S)
+ARCHIVE="$DEST/${NAME}-${STAMP}.tgz"
+# TODO: create archive (respect --exclude)
+# TODO: verify archive with tar -tzf
+# TODO: retention (keep last N)
+# Save with Ctrl+X, then Y, then Enter
+chmod +x "$HOME/lab7/scripts/backup.sh"
+```
+
+2) Try it out:
+```bash
+"$HOME/lab7/scripts/backup.sh" --source "$HOME/lab7" --dest "$HOME/lab7-outputs" --name lab7 --exclude tmp --retention 3
+```
+
+Checkpoint: Archive produced and verified; retention enforced.
+Deliverable: `lab7-outputs/lab7-*.tgz` and log entries.
+
+Part E — Log Parsing with Shell Scripting (Extra)
+
+What you'll learn: Parse structured/unstructured logs to extract top talkers, error hotspots, and trends.
+
+1) Implement `log_parse.sh` (supports nginx and syslog styles) — Your Task:
+```bash
+nano "$HOME/lab7/scripts/log_parse.sh"
+# Requirements (implement yourself):
+# - Parse args: --file, --type {nginx,syslog}, --out
+# - Validate input file exists; create out dir
+# - For nginx: produce top-ips.txt, top-404.txt, user-agents.txt
+# - For syslog: produce top-programs.txt, top-error-times.txt
+# - Log a completion message
+# Hint: use awk, sort, uniq -c, head, grep -E
+chmod +x "$HOME/lab7/scripts/log_parse.sh"
+```
+
+2) Try it out (nginx or syslog):
+```bash
+"$HOME/lab7/scripts/log_parse.sh" --file /var/log/syslog --type syslog --out "$HOME/lab7-outputs" || true
+```
+
+Checkpoint: Summary files created.
+Deliverable: `top-*.txt` outputs in `lab7-outputs/`.
+
+Part F — Task Scheduling with Cron (Extra)
+
+What you'll learn: Schedule recurring tasks; capture logs and rotate outputs. Optional: systemd timers.
+
+1) Schedule daily backup and hourly log parse:
+```bash
+CRON_FILE="$HOME/lab7-outputs/lab7-cron.txt"
+(crontab -l 2>/dev/null; echo "30 2 * * * $HOME/lab7/scripts/backup.sh --source $HOME/lab7 --dest $HOME/lab7-outputs --name lab7 --retention 7 >> $HOME/lab7-outputs/backup.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "0 * * * * $HOME/lab7/scripts/log_parse.sh --file /var/log/syslog --type syslog --out $HOME/lab7-outputs >> $HOME/lab7-outputs/logparse.log 2>&1") | crontab -
+crontab -l | tee "$CRON_FILE"
+```
+
+2) Optional: systemd timer (if available):
+```bash
+echo "Optional exercise: create a user systemd service and timer to run backup.sh nightly."
+```
+
+Checkpoint: Cron entries installed; logs captured to `backup.log` and `logparse.log`.
+Deliverable: `lab7-cron.txt` plus produced logs.
+
+Part G — End-to-End Runbook (Tie Everything Together)
+
+What you'll learn: Combine tools into a small runbook for a mini environment.
+
+1) One-shot demonstration:
+```bash
+"$HOME/lab7/scripts/fm_tool.sh" --dir "$HOME/lab7/demo" --pattern '*.log' --older-than 0 --archive --retention 3
+"$HOME/lab7/scripts/proc_watch.sh" --name 'sleep\\b' --samples 2 --interval 1
+"$HOME/lab7/scripts/backup.sh" --source "$HOME/lab7" --dest "$HOME/lab7-outputs" --name lab7 --retention 3
+"$HOME/lab7/scripts/log_parse.sh" --file /var/log/syslog --type syslog --out "$HOME/lab7-outputs" || true
+```
+
+Checkpoint: You executed all four tools and produced artifacts in `lab7-outputs/`.
+Deliverable: outputs directory content listing and `lab7.log`.
+
+Submission Checklist
+- Scripts: `fm_tool.sh`, `proc_watch.sh`, `backup.sh`, `log_parse.sh`
+- Evidence files in `~/lab7-outputs/` (archives, summaries, logs)
+- Cron export `lab7-cron.txt`
+- Short `README.md` with what you learned and any challenges
+
+Grading Rubric
+- File management functionality and safety: 20%
+- Process monitoring correctness and thresholds: 20%
+- Backup reliability and retention: 20%
+- Log parsing outputs and correctness: 20%
+- Scheduling correctness and evidence: 20%
+
+Stretch Goals (optional)
+- Add colored logging and structured JSON output modes
+- Email or Slack notification on backup failure (use `mail` or webhook)
+- Add integrity manifest (sha256) for backups and verify on restore
+- Convert cron jobs to systemd timers with randomized delays
+
+Reference
+- man pages: `bash`, `find`, `tar`, `ps`, `awk`, `crontab`
+
+Enhanced 2-Hour Version — Time Guidance, Acceptance Criteria, and Advanced Tasks
+
+Estimated total time: ~120 minutes
+- Part A: 5 min
+- Part B (File Management): 25 min
+- Part C (Process Monitoring): 20 min
+- Part D (Backups): 25 min
+- Part E (Log Parsing): 20 min
+- Part F (Scheduling): 10 min
+- Part G (Runbook): 10 min
+
+Acceptance Criteria (strict)
+- All scripts support `-h|--help` and return non-zero on misuse.
+- Scripts log to `~/lab7-outputs/lab7.log` and are idempotent.
+- Exit codes: success 0; expected error paths >0 with a clear message.
+- Each part’s checkpoint artifacts exist and are non-empty.
+
+Advanced Tasks To Implement (Real-World Additions)
+
+1) Add preflight and traps across all scripts (5–10 min)
+```bash
+# Add near top of each script, after set -euo pipefail
+trap 'code=$?; echo "[$(date +%F_%T)] Trap: exiting with code $code" | tee -a "$LOG_DIR/lab7.log"' EXIT
+trap 'echo "[$(date +%F_%T)] Trap: SIGINT received" | tee -a "$LOG_DIR/lab7.log"; exit 130' INT
+
+preflight() {
+  local reqs=(tar find awk sed ps sha256sum date)
+  for r in "${reqs[@]}"; do command -v "$r" >/dev/null || die "Missing dependency: $r"; done
+}
+preflight
+```
+
+2) Backup integrity manifest and restore flow (10–15 min)
+```bash
+# Enhance backup.sh: create checksum manifest and verify (Your Task)
+# - After creating $ARCHIVE: write SHA256 to $DEST/${NAME}-${STAMP}.sha256
+# - On restore: verify checksum if manifest exists, then extract
+
+# Create restore.sh with nano (Your Task):
+nano "$HOME/lab7/scripts/restore.sh"
+# Requirements:
+# - Args: --archive FILE --target DIR
+# - Verify archive exists; create target if missing
+# - If ${ARC%.tgz}.sha256 exists: run sha256sum -c
+# - Extract with tar -xzf
+# - Log completion
+chmod +x "$HOME/lab7/scripts/restore.sh"
+```
+
+3) Process auto-restart hook (5–10 min)
+```bash
+# Enhance proc_watch.sh: add --restart-cmd CMD
+# Add parsing:
+#   --restart-cmd) RCMD=${2:-}; shift 2;;
+# In variables:
+#   RCMD=""
+# In threshold branch:
+#   if [[ "$ACTION" == "restart" && -n "$RCMD" ]]; then
+#     log "Restarting via: $RCMD"; bash -lc "$RCMD" || log "Restart command failed"
+#   fi
+```
+
+4) Richer log parsing and HTML report (10–15 min)
+```bash
+# Enhance log_parse.sh: emit a simple HTML summary
+HTML_OUT="$OUT/report.html"
+{
+  echo "<html><body><h1>Log Report $(date)</h1>"
+  [[ -f "$OUT/top-ips.txt" ]] && { echo "<h2>Top IPs</h2><pre>"; cat "$OUT/top-ips.txt"; echo "</pre>"; }
+  [[ -f "$OUT/top-404.txt" ]] && { echo "<h2>Top 404</h2><pre>"; cat "$OUT/top-404.txt"; echo "</pre>"; }
+  [[ -f "$OUT/top-programs.txt" ]] && { echo "<h2>Top Programs</h2><pre>"; cat "$OUT/top-programs.txt"; echo "</pre>"; }
+  echo "</body></html>"
+} > "$HTML_OUT"
+log "HTML report: $HTML_OUT"
+```
+
+5) Scheduled health report (10–15 min)
+```bash
+nano "$HOME/lab7/scripts/health_report.sh"
+# Requirements (Your Task):
+# - Output to $LOG_DIR/health-<stamp>.txt
+# - Include uptime, df -h, memory (free -h or vm_stat), top procs, recent errors
+# - Log final path
+chmod +x "$HOME/lab7/scripts/health_report.sh"
+
+# Schedule hourly
+(crontab -l 2>/dev/null; echo "15 * * * * $HOME/lab7/scripts/health_report.sh >> $HOME/lab7-outputs/health.log 2>&1") | crontab -
+```
+
+Time Checkpoints and Evidence
+- Provide a `time_spent.md` with approximate minutes per part.
+- Provide `tree -a ~/lab7 ~/lab7-outputs` output.
+- Provide command transcripts (copy/paste or screenshots) for key steps.
+
