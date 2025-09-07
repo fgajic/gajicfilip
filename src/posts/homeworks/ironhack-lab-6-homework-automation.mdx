@@ -1,0 +1,135 @@
+---
+title: Lab 6 Homework — End-to-End Nginx Automation Script
+teaser: Build an idempotent, safe, and verifiable ops runbook that automates Lab 6
+date: "03.09.2025."
+---
+
+Homework: Automate Lab 6 End-to-End (Nginx Ops Runbook)
+
+Objective
+- Build a single, idempotent automation script (plus helpers) that provisions and validates all parts of Lab 6 on Ubuntu, with safe defaults, rollback, and evidence generation.
+
+Outcomes
+- Reproducible provisioning, service hardening, reverse proxying, rate limiting, log rotation/analysis, deployment, and scheduled backups with verification.
+
+Prerequisites
+- Ubuntu VM with sudo privileges
+- SSH key authentication ready
+- Basic Bash knowledge
+
+Scope and Requirements
+- Target OS: Ubuntu LTS
+- Script interface: `lab6.sh --section {nginx,ssh,firewall,fail2ban,proxy,rate,monitor,deploy,backup,all} --dry-run --verbose --yes --out DIR`
+- Safety: Back up before edits; validate with `nginx -t` before reload; no destructive actions without `--yes`
+- Idempotency: Re-runs do not duplicate state; detect-and-skip when already configured
+- Evidence: Write logs and artifacts to `--out` (default `~/lab6-outputs`)
+
+Tasks (Sections)
+1) Nginx base
+- Install and enable nginx
+- Create `site1.local` and `app.local` server blocks with correct ownership and permissions
+- Add `/etc/hosts` mappings idempotently
+- Validate and reload; save `curl -I` outputs
+
+2) Firewall + Fail2Ban
+- UFW: deny incoming, allow 2222/tcp, allow Nginx Full
+- Install Fail2Ban; create `jail.local` enabling sshd and nginx jails; show jail status
+
+3) Nginx hardening
+- `server_tokens off` and core security headers in `conf.d/security.conf`
+- Validate presence via `nginx -T` and grep
+
+4) Reverse proxy setup
+- Launch two simple Node backends (ports 3002 and 3003) with `nohup`
+- Configure `api.local` to proxy to 3002; `service2.local` to proxy to 3003
+- Save curl JSON responses
+
+5) Rate limiting
+- Define global zones and per-site limits; stricter `/admin` on `api.local`
+- Demonstrate limits with burst requests; capture 503s and error log snippets
+
+6) Monitoring and logs
+- Create a system snapshot with `free -h`, `df -h`, `ss -tln`, `uptime`
+- Trigger logrotate; produce top-IPs, top-404, and user-agents from access logs
+
+7) Deployment + rollback prep
+- Safe deploy script for `site1` with pre-backup tar and atomic rsync
+- Run once with sample content; record backup path and final permissions
+
+8) Scheduled backups
+- Install nightly backup script to `/usr/local/bin/`
+- Add crontab entry; export `crontab -l` to outputs
+
+Deliverables
+- `lab6.sh` (main) and any helper scripts
+- Output directory containing: curl results, `nginx -T` snippets, UFW/Fail2Ban status, rate-limit test results, monitoring snapshot, deploy log, cron export
+- Short `README.md` explaining how to run, assumptions, and what is automated
+- Optional: `Makefile` with `make all`, `make verify`, `make clean`
+
+CLI Contract (strict)
+- `--help` prints usage; misuse exits with non-zero code
+- `--dry-run` shows actions; makes no changes
+- `--out DIR` controls evidence path
+- `--section` runs only selected parts; `all` runs everything
+- Non-zero exit on validation failure; print a clear error
+
+Assessment Rubric
+- Correctness and idempotency: 30%
+- Safety (backups, validation, rollback, dry-run): 20%
+- Coverage of sections: 30%
+- Observability (logs, artifacts, clarity): 10%
+- Code quality (structure, flags, error handling): 10%
+
+Suggested Timeline
+- Session 1: nginx, ssh, firewall/fail2ban, hardening
+- Session 2: proxy, rate limit, monitoring/logs, deploy, cron
+- Final: run `--section all` on a fresh VM; verify artifacts
+
+Hints
+- Guard every reload with `nginx -t`
+- Use detect-and-skip checks (file existence, directive grep, ufw status)
+- Wrap risky edits with timestamped backups
+- Centralize logging; print a final summary of produced artifacts
+
+Optional Starter CLI Skeleton (students may implement or adapt)
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT_DIR=${OUT_DIR:-"$HOME/lab6-outputs"}
+SECTION="all"; DRY=false; YES=false; VERBOSE=false
+
+usage(){ cat <<USAGE
+Usage: $(basename "$0") --section {nginx,ssh,firewall,fail2ban,proxy,rate,monitor,deploy,backup,all} [--dry-run] [--yes] [--verbose] [--out DIR]
+USAGE
+}
+
+log(){ mkdir -p "$OUT_DIR"; echo "[$(date +%F_%T)] $*" | tee -a "$OUT_DIR/lab6.log"; }
+die(){ echo "ERROR: $*" >&2; exit 1; }
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --section) SECTION=${2:-}; shift 2;;
+    --out) OUT_DIR=${2:-}; shift 2;;
+    --dry-run) DRY=true; shift;;
+    --yes) YES=true; shift;;
+    --verbose) VERBOSE=true; shift;;
+    -h|--help) usage; exit 0;;
+    *) die "Unknown arg: $1";;
+  esac
+done
+
+[[ -z "$SECTION" ]] && die "--section is required"
+log "Starting section: $SECTION (dry-run=$DRY yes=$YES out=$OUT_DIR)"
+```
+
+Submission Checklist
+- Automation scripts: `lab6.sh` and any helpers
+- Evidence files in `~/lab6-outputs/` (archives, configs, curl outputs, logs)
+- `README.md` (how to run, observations, challenges)
+
+Notes
+- Keep actions idempotent and safe; default to no destructive changes without `--yes`
+- Prefer small, composable functions and clear logging
+
+

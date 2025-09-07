@@ -21,6 +21,8 @@ function postTypeSlug(postType: PostType): string {
             return "guides";
         case PostType.Lab:
             return "labs";
+        case PostType.Homework:
+            return "homeworks";
     }
 }
 

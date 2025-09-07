@@ -8,6 +8,8 @@ function generateBasePostUrl(postType: PostType) {
             return "/guides/";
         case PostType.Lab:
             return "/labs/";
+        case PostType.Homework:
+            return "/homeworks/";
         default:
             return "";
     }

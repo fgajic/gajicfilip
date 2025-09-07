@@ -72,6 +72,7 @@ function NavbarContent({ isMobile, onClick }: NavbarContentProps) {
     <>
       <NavbarLink href={"/blog"} onClick={onClick}><p className={textClass}>Blog</p></NavbarLink>
       <NavbarLink href={"/labs"} onClick={onClick}><p className={textClass}>Labs</p></NavbarLink>
+      <NavbarLink href={"/homeworks"} onClick={onClick}><p className={textClass}>Homeworks</p></NavbarLink>
       <NavbarLink href={"/guides"} onClick={onClick}><p className={textClass}>Guides</p></NavbarLink>
       <NavbarLink href={"/about"} onClick={onClick}><p className={textClass}>About</p></NavbarLink>
       <div className={"flex items-center ml-auto"}>

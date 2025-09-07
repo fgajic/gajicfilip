@@ -4,6 +4,7 @@ import {PostInfo, PostSearchModel, PostType} from "@/domain/post";
 import blogPostsData from "../../posts/blog-posts-data.json";
 import guidePostsData from "../../posts/guides-post-data.json"
 import labPostsData from "../../posts/labs-posts-data.json"
+import homeworkPostsData from "../../posts/homeworks-posts-data.json"
 import FuseResult = Fuse.FuseResult;
 
 export type SearchResponse = {
@@ -42,6 +43,9 @@ export class PostSearcher {
     private static labFuse: Fuse<PostSearchModel>;
     private static labPosts: PostSearchModel[]
 
+    private static homeworkFuse: Fuse<PostSearchModel>;
+    private static homeworkPosts: PostSearchModel[]
+
     static async search(query: string, postType: PostType): Promise<PostSearchModel[]> {
         if (this.blogFuse == undefined || this.guideFuse == undefined) {
             await this.cacheArticles();
@@ -54,6 +58,8 @@ export class PostSearcher {
                 return this.guidePosts;
             } else if (postType == PostType.Lab) {
                 return this.labPosts;
+            } else if (postType == PostType.Homework) {
+                return this.homeworkPosts;
             }
         }
 
@@ -64,6 +70,8 @@ export class PostSearcher {
             result = this.guideFuse.search(query);
         } else if (postType == PostType.Lab) {
             result = this.labFuse.search(query);
+        } else if (postType == PostType.Homework) {
+            result = this.homeworkFuse.search(query);
         }
 
         return result.map(e => e.item);
@@ -91,6 +99,15 @@ export class PostSearcher {
         this.labPosts = this.generateSearchModels(labPostsData as Article[], PostType.Lab);
         this.labFuse = new Fuse(
             this.labPosts,
+            {
+                threshold: 0.4,
+                keys: ['info.title']
+            }
+        );
+
+        this.homeworkPosts = this.generateSearchModels(homeworkPostsData as Article[], PostType.Homework);
+        this.homeworkFuse = new Fuse(
+            this.homeworkPosts,
             {
                 threshold: 0.4,
                 keys: ['info.title']
